@@ -13,11 +13,14 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="头文件\hashlib">
+      <UniqueIdentifier>{6c91c3bc-91ba-4552-bc11-0164ff109927}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\hashlib">
+      <UniqueIdentifier>{cce63737-f110-4f31-9591-e4554dfcc263}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="CmdParser.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -48,6 +51,30 @@
     <ClInclude Include="ConsoleMenu.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="hashlib\crc32.h">
+      <Filter>头文件\hashlib</Filter>
+    </ClInclude>
+    <ClInclude Include="hashlib\hash.h">
+      <Filter>头文件\hashlib</Filter>
+    </ClInclude>
+    <ClInclude Include="hashlib\hmac.h">
+      <Filter>头文件\hashlib</Filter>
+    </ClInclude>
+    <ClInclude Include="hashlib\keccak.h">
+      <Filter>头文件\hashlib</Filter>
+    </ClInclude>
+    <ClInclude Include="hashlib\md5.h">
+      <Filter>头文件\hashlib</Filter>
+    </ClInclude>
+    <ClInclude Include="hashlib\sha1.h">
+      <Filter>头文件\hashlib</Filter>
+    </ClInclude>
+    <ClInclude Include="hashlib\sha3.h">
+      <Filter>头文件\hashlib</Filter>
+    </ClInclude>
+    <ClInclude Include="hashlib\sha256.h">
+      <Filter>头文件\hashlib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinUtils.cpp">
@@ -76,6 +103,27 @@
     </ClCompile>
     <ClCompile Include="ConsoleMenu.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="hashlib\crc32.cpp">
+      <Filter>源文件\hashlib</Filter>
+    </ClCompile>
+    <ClCompile Include="hashlib\digest.cpp">
+      <Filter>源文件\hashlib</Filter>
+    </ClCompile>
+    <ClCompile Include="hashlib\keccak.cpp">
+      <Filter>源文件\hashlib</Filter>
+    </ClCompile>
+    <ClCompile Include="hashlib\md5.cpp">
+      <Filter>源文件\hashlib</Filter>
+    </ClCompile>
+    <ClCompile Include="hashlib\sha1.cpp">
+      <Filter>源文件\hashlib</Filter>
+    </ClCompile>
+    <ClCompile Include="hashlib\sha3.cpp">
+      <Filter>源文件\hashlib</Filter>
+    </ClCompile>
+    <ClCompile Include="hashlib\sha256.cpp">
+      <Filter>源文件\hashlib</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
