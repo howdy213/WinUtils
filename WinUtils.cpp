@@ -1,18 +1,22 @@
 #include "WinUtils.h"
 #include "Logger.h"
 #include "StrConvert.h"
+#if USE_HASHLIB
 #include "hashlib/md5.h"
+#endif
 #include <ShlObj.h>
 #include <format>
 #include <thread>
+#include <algorithm>
+#include <ranges>
 using namespace std;
 using namespace WinUtils;
 constexpr const wchar_t* MONITOR_WND_CLASS = L"WinUtils_ProcessMonitor_Class";
-Logger logger(L"WinUtils");
+Logger logger(TS("WinUtils"));
 
 struct MonitorThreadParam {
 	HANDLE exitEvent;
-	vector<wstring> targetProcesses;
+	vector<string_t> targetProcesses;
 	int checkInterval;
 };
 
@@ -42,7 +46,7 @@ DWORD WINAPI MonitorThread(LPVOID lpParam) {
 bool WinUtils::EnumProcesses(const FindProcCallback& callback) {
 	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (hSnapshot == INVALID_HANDLE_VALUE) {
-		logger.DLog(LogLevel::Error, format(L"CreateToolhelp32Snapshot fail: {}", GetWindowsErrorMsg()));
+		logger.DLog(LogLevel::Error, format(TS("CreateToolhelp32Snapshot fail: {}"), GetWindowsErrorMsg()));
 		return false;
 	}
 
@@ -50,7 +54,7 @@ bool WinUtils::EnumProcesses(const FindProcCallback& callback) {
 	entry.dwSize = sizeof(PROCESSENTRY32W);
 
 	if (!Process32FirstW(hSnapshot, &entry)) {
-		logger.DLog(LogLevel::Error, format(L"Process32FirstW fail: {}", GetWindowsErrorMsg()));
+		logger.DLog(LogLevel::Error, format(TS("Process32FirstW fail: {}"), GetWindowsErrorMsg()));
 		CloseHandle(hSnapshot);
 		return false;
 	}
@@ -84,13 +88,13 @@ std::optional<PROCESSENTRY32W> WinUtils::FindFirstProcess(const FindProcCallback
 bool WinUtils::EnableDebugPrivilege() {
 	HANDLE hToken = nullptr;
 	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
-		logger.DLog(LogLevel::Error, format(L"OpenProcessToken fail: {}", GetWindowsErrorMsg()));
+		logger.DLog(LogLevel::Error, format(TS("OpenProcessToken fail: {}"), GetWindowsErrorMsg()));
 		return false;
 	}
 
 	LUID luid{};
 	if (!LookupPrivilegeValueW(nullptr, SE_DEBUG_NAME, &luid)) {
-		logger.DLog(LogLevel::Error, format(L"LookupPrivilegeValueW fail: {}", GetWindowsErrorMsg()));
+		logger.DLog(LogLevel::Error, format(TS("LookupPrivilegeValueW fail: {}"), GetWindowsErrorMsg()));
 		CloseHandle(hToken);
 		return false;
 	}
@@ -102,7 +106,7 @@ bool WinUtils::EnableDebugPrivilege() {
 
 	bool ret = AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), nullptr, nullptr);
 	if (!ret || GetLastError() == ERROR_NOT_ALL_ASSIGNED) {
-		logger.DLog(LogLevel::Error, format(L"AdjustTokenPrivileges fail: {}", GetWindowsErrorMsg()));
+		logger.DLog(LogLevel::Error, format(TS("AdjustTokenPrivileges fail: {}"), GetWindowsErrorMsg()));
 		CloseHandle(hToken);
 		return false;
 	}
@@ -111,45 +115,45 @@ bool WinUtils::EnableDebugPrivilege() {
 	return true;
 }
 
-bool WinUtils::IsProcessRunning(std::wstring_view processName) {
+bool WinUtils::IsProcessRunning(string_view_t processName) {
 	return FindFirstProcess([&](const PROCESSENTRY32W& entry) {
-		return _wcsicmp(entry.szExeFile, processName.data()) == 0;
+		return entry.szExeFile == ConvertString<wstring>((string_t)processName);
 		}).has_value();
 }
 
-std::vector<DWORD> WinUtils::GetProcessIdsByName(std::wstring_view processName) {
+std::vector<DWORD> WinUtils::GetProcessIdsByName(string_view_t processName) {
 	vector<DWORD> pids;
 	EnumProcesses([&](const PROCESSENTRY32W& entry) {
-		if (_wcsicmp(entry.szExeFile, processName.data()) == 0) pids.push_back(entry.th32ProcessID);
+		if (entry.szExeFile == ConvertString<wstring>((string_t)processName)) pids.push_back(entry.th32ProcessID);
 		return true;
 		});
 	return pids;
 }
 
-int WinUtils::TerminateProcessesByName(std::wstring_view processName) {
+int WinUtils::TerminateProcessesByName(string_view_t processName) {
 	int closedCount = 0;
 	EnumProcesses([&](const PROCESSENTRY32W& entry) {
-		if ((wstring)entry.szExeFile != processName || entry.th32ProcessID == GetCurrentProcessId())
+		if (entry.szExeFile != ConvertString<wstring>((string_t)processName) || entry.th32ProcessID == GetCurrentProcessId())
 			return true;
 
 		HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, entry.th32ProcessID);
 		if (!hProcess) {
-			logger.DLog(LogLevel::Error, format(L"OpenProcess fail [{}:{}]: {}", processName, entry.th32ProcessID, GetWindowsErrorMsg()));
+			logger.DLog(LogLevel::Error, format(TS("OpenProcess fail [{}:{}]: {}"), processName, entry.th32ProcessID, GetWindowsErrorMsg()));
 			return true;
 		}
 
 		if (TerminateProcess(hProcess, 0)) {
-			logger.DLog(LogLevel::Info, format(L"Terminate success [{}:{}]", processName, entry.th32ProcessID));
+			logger.DLog(LogLevel::Info, format(TS("Terminate success [{}:{}]"), processName, entry.th32ProcessID));
 			closedCount++;
 		}
-		else logger.DLog(LogLevel::Error, format(L"Terminate fail [{}:{}]: {}", processName, entry.th32ProcessID, GetWindowsErrorMsg()));
+		else logger.DLog(LogLevel::Error, format(TS("Terminate fail [{}:{}]: {}"), processName, entry.th32ProcessID, GetWindowsErrorMsg()));
 		CloseHandle(hProcess);
 		return true;
 		});
 	return closedCount;
 }
 
-int WinUtils::TerminateMultipleProcesses(const std::vector<std::wstring>& processNames) {
+int WinUtils::TerminateMultipleProcesses(const std::vector<string_t>& processNames) {
 	int totalClosed = 0;
 	for (const auto& name : processNames) totalClosed += TerminateProcessesByName(name);
 	return totalClosed;
@@ -203,21 +207,21 @@ RECT WinUtils::GetWindowRect(HWND hWnd) {
 	return rect;
 }
 
-bool WinUtils::GetWindowTitle(HWND hWnd, WCHAR* outTitle, int maxLength) {
+bool WinUtils::GetWindowTitle(HWND hWnd, char_t* outTitle, int maxLength) {
 	if (!IsWindow(hWnd) || !outTitle || maxLength <= 0) return false;
 	int titleLen = GetWindowTextLengthW(hWnd);
-	if (titleLen <= 0) { outTitle[0] = L'\0'; return false; }
+	if (titleLen <= 0) { outTitle[0] = TS('\0'); return false; }
 	titleLen = (std::min)(titleLen, maxLength - 1);
-	GetWindowTextW(hWnd, outTitle, titleLen + 1);
+	TF(GetWindowText)(hWnd, outTitle, titleLen + 1);
 	return true;
 }
 
-std::wstring WinUtils::GetWindowTitleString(HWND hWnd) {
-	if (!IsWindow(hWnd)) return L"";
+string_t WinUtils::GetWindowTitleString(HWND hWnd) {
+	if (!IsWindow(hWnd)) return TS("");
 	int titleLen = GetWindowTextLengthW(hWnd);
-	if (titleLen <= 0) return L"";
-	wstring title(titleLen, L'\0');
-	GetWindowTextW(hWnd, title.data(), titleLen + 1);
+	if (titleLen <= 0) return TS("");
+	string_t title(titleLen, TS('\0'));
+	TF(GetWindowText)(hWnd, title.data(), titleLen + 1);
 	return title;
 }
 
@@ -238,88 +242,210 @@ bool WinUtils::IsCurrentProcessAdmin() {
 bool WinUtils::RequireAdminPrivilege(bool exit) {
 	if (IsCurrentProcessAdmin()) return false;
 
-	wstring appPath = GetCurrentProcessPath();
-	HINSTANCE hResult = ShellExecuteW(nullptr, L"runas", appPath.c_str(),
-		GetCommandLineW(), nullptr, SW_SHOWNORMAL);
+	string_t appPath = GetCurrentProcessPath();
+	HINSTANCE hResult = TF(ShellExecute)(nullptr, TS("runas"), appPath.c_str(),
+		TF(GetCommandLine)(), nullptr, SW_SHOWNORMAL);
 
 	if (reinterpret_cast<INT_PTR>(hResult) <= 32) return false;
 	if (exit) ExitProcess(0);
 	return true;
 }
 
-void WinUtils::EnsureSingleInstance(std::wstring title, std::wstring name, std::wstring content, std::wstring extraInfo) {
+void WinUtils::EnsureSingleInstance(string_t title, string_t name, string_t content, string_t extraInfo) {
 	if (name.empty()) name = GetCurrentProcessName();
-	if (title.empty()) title = L"Prompt - " + name;
-	if (content.empty()) content = L"The program is already running!\nClick OK to close the existing instance, click Cancel to exit this run.";
+	if (title.empty()) title = TS("Prompt - ") + name;
+	if (content.empty()) content = TS("The program is already running!\nClick OK to close the existing instance, click Cancel to exit this run.");
+#if USE_HASHLIB
 	MD5 md5;
-	string md5Str = WideStringToUtf8(L"WinUtils_SingleInstance_" + name + extraInfo);
-	md5.add(md5Str.c_str(),md5Str.length());
-	wstring mutexName = AnsiToWideString(md5.getHash().substr(0,16).c_str());
-	HANDLE hMutex = CreateMutexW(nullptr, TRUE, mutexName.c_str());
+	string md5Str = ConvertString<string>((string_t)(TS("WinUtils_SingleInstance_") + name + extraInfo));
+	md5.add(md5Str.c_str(), md5Str.length());
+	string_t mutexName = ConvertString(md5.getHash().substr(0, 16));
+#else
+	string_t input = name + extraInfo;
+	const size_t len = input.length();
+	if (len == 0) {
+		input = TS("WinUtils_SingleInstance");
+	}
+	namespace views = std::views;
+	auto indices = views::iota(0, 16) | views::transform(
+		[len](int i) -> size_t {
+			return static_cast<size_t>(i) * (len - 1) / 15;
+		}
+	);
+	string_t mutexName = indices | views::transform([&input](size_t idx) {
+		return input[idx];
+		}) | std::ranges::to<string_t>();
+#endif// Generate a mutex name based on the process name and extra info (using MD5 hash or simple sampling)
+	HANDLE hMutex = TF(CreateMutex)(nullptr, TRUE, mutexName.c_str());
 
 	if (GetLastError() == ERROR_ALREADY_EXISTS) {
-		int ret = MessageBoxW(nullptr, content.c_str(), title.c_str(), MB_OKCANCEL | MB_ICONWARNING);
+		int ret = TF(MessageBox)(nullptr, content.c_str(), title.c_str(), MB_OKCANCEL | MB_ICONWARNING);
 		if (ret == IDOK) TerminateProcessesByName(name);
 		if (hMutex)ReleaseMutex(hMutex);
 		ExitProcess(0);
 	}
 }
 
-std::wstring WinUtils::GetCurrentProcessPath() {
-	WCHAR path[MAX_PATH] = { 0 };
-	GetModuleFileNameW(nullptr, path, _countof(path));
+string_t WinUtils::GetCurrentProcessPath() {
+	char_t path[MAX_PATH] = { 0 };
+	TF(GetModuleFileName)(nullptr, path, _countof(path));
 	return path;
 }
 
-std::wstring WinUtils::GetCurrentProcessDir() {
+string_t WinUtils::GetCurrentProcessDir() {
 	return GetDirFromPath(GetCurrentProcessPath());
 }
 
-std::wstring WinUtils::GetCurrentProcessName() {
+string_t WinUtils::GetCurrentProcessName() {
 	return GetFileNameFromPath(GetCurrentProcessPath());
 }
 
-std::wstring WinUtils::GetFileNameFromPath(std::wstring_view path) {
-	size_t pos = path.find_last_of(L"\\/");
-	return pos == wstring_view::npos ? wstring(path) : wstring(path.substr(pos + 1));
+string_t WinUtils::GetFileNameFromPath(string_view_t path) {
+	size_t pos = path.find_last_of(TS("\\/"));
+	return pos == wstring_view::npos ? string_t(path) : string_t(path.substr(pos + 1));
 }
 
-std::wstring WinUtils::GetDirFromPath(std::wstring_view path) {
-	size_t pos = path.find_last_of(L"\\/");
-	return pos == wstring_view::npos ? L"" : wstring(path.substr(0, pos + 1));
+string_t WinUtils::GetDirFromPath(string_view_t path) {
+	size_t pos = path.find_last_of(TS("\\/"));
+	return pos == wstring_view::npos ? TS("") : string_t(path.substr(0, pos + 1));
+}
+bool WinUtils::IsBareFileName(const string_t& path) {
+	return (path.find_first_of(TS("\\/")) == string_t::npos) &&
+		(path.size() < 2 || path[1] != TS(':')); // not absolute path
+}
+
+// Normalize absolute path: resolve '.' and '..', assume forward slashes '/'
+string_t WinUtils::NormalizeAbsolutePath(const string_t& path) {
+	if (path.empty()) return path;
+
+	std::vector<string_t> components;
+	size_t start = 0;
+	size_t end = path.find_first_of(TS("\\/"));
+	bool preserveLeadingSlash = (!path.empty() && path[0] == TS('/'));
+
+	while (true) {
+		string_t comp;
+		if (end == string_t::npos) {
+			comp = path.substr(start);
+		}
+		else {
+			comp = path.substr(start, end - start);
+		}
+
+		if (comp == TS(".")) {
+			// ignore current directory
+		}
+		else if (comp == TS("..")) {
+			// handle parent directory: cannot go above drive root or empty root (/)
+			if (!components.empty()) {
+				bool canPop = true;
+				// drive root (e.g., "C:") cannot go up
+				if (components.size() == 1 && components[0].size() == 2 && components[0][1] == L':')
+					canPop = false;
+				// empty root (component for "/") cannot go up
+				if (components.size() == 1 && components[0].empty())
+					canPop = false;
+				if (canPop)
+					components.pop_back();
+			}
+		}
+		else {
+			// non-empty component, or preserve leading empty component (for paths starting with '/')
+			if (!comp.empty() || (components.empty() && preserveLeadingSlash))
+				components.push_back(comp);
+		}
+
+		if (end == string_t::npos) break;
+		start = end + 1;
+		end = path.find_first_of(TS("\\/"), start);
+	}
+
+	// rebuild path
+	string_t result;
+	for (size_t i = 0; i < components.size(); ++i) {
+		if (i > 0) result += TS('/');
+		result += components[i];
+	}
+
+	// if original path starts with '/' and result is empty, return "/"
+	if (preserveLeadingSlash && result.empty())
+		result = TS("/");
+
+	return result;
+}
+
+void WinUtils::CleanupPath(string_t& path)
+{
+	replace(path.begin(), path.end(), TS('\\'), TS('/'));
+}
+
+// Resolve path, return absolute path. If path is a bare filename, return it directly.
+string_t WinUtils::ResolvePath(const string_t& path, const string_t& baseDir) {
+	if (IsBareFileName(path))
+		return path; // bare filename, let caller search in PATH
+
+	// determine base directory
+	string_t effectiveBase = baseDir.empty() ? GetCurrentProcessDir() : baseDir;
+	// ensure base directory ends with '/'
+	if (!effectiveBase.empty() && !((string_t)TS("/\\")).contains(effectiveBase.back()))
+		effectiveBase.push_back(TS('/'));
+
+	// replace backslashes with forward slashes
+	string_t normalizedPath = path;
+	CleanupPath(normalizedPath);
+
+	// check if absolute path (starts with drive letter or '/')
+	bool isAbsolute = false;
+	if (normalizedPath.size() >= 2 && normalizedPath[1] == L':')
+		isAbsolute = true;                     // e.g., D:/cmd.exe or D:
+	else if (!normalizedPath.empty() && normalizedPath[0] == TS('/'))
+		isAbsolute = true;                     // e.g., /usr/bin or //server/share
+
+	string_t fullPath;
+	if (isAbsolute) fullPath = normalizedPath;
+	else fullPath = effectiveBase + normalizedPath;
+	// relative path, prepend base directory
+	CleanupPath(fullPath);
+	// normalize and return
+	return NormalizeAbsolutePath(fullPath);
 }
 
 // Error handling
-std::wstring WinUtils::GetWindowsErrorMsg(DWORD error_code) noexcept
+string_t WinUtils::GetWindowsErrorMsg(DWORD error_code) noexcept
 {
-	wchar_t* error_buf = nullptr;
-	const DWORD buf_len = FormatMessageW(
+	char_t* error_buf = nullptr;
+	const DWORD buf_len = TF(FormatMessage)(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 		nullptr,
 		error_code,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		reinterpret_cast<wchar_t*>(&error_buf),
+		reinterpret_cast<char_t*>(&error_buf),
 		0,
 		nullptr
-	);
-
-	std::wstring error_msg;
+		);
+	string_t error_msg;
 	if (buf_len > 0 && error_buf != nullptr)
 	{
 		error_msg = error_buf;
 		LocalFree(error_buf);
 	}
-	else error_msg = L"Unknown error";
+	else error_msg = TS("Unknown error");
 	return error_msg;
 }
 
-HINSTANCE WinUtils::RunExternalProgram(std::wstring lpFile, std::wstring lpOperation, std::wstring lpParameters, std::wstring lpDirectory) {
+HINSTANCE WinUtils::RunExternalProgram(string_t lpFile, string_t lpOperation, string_t lpParameters, string_t lpDirectory, int showCmd) {
 	if (lpDirectory.empty()) lpDirectory = GetDirFromPath(lpFile);
-	return ShellExecuteW(nullptr, lpOperation.empty() ? L"open" : lpOperation.c_str(),
-		lpFile.c_str(), lpParameters.c_str(), lpDirectory.c_str(), SW_NORMAL);
+	return TF(ShellExecute)(nullptr, lpOperation.empty() ? TS("open") : lpOperation.c_str(),
+		lpFile.c_str(), lpParameters.c_str(), lpDirectory.c_str(), showCmd);
 }
 
-int WinUtils::MonitorAndTerminateProcesses(HINSTANCE hInstance, const std::vector<std::wstring>& targetProcesses, int checkInterval) {
+HINSTANCE WinUtils::RunExternalProgram(const LaunchItem& item)
+{
+	string_t op = item.runAsAdmin ? TS("runas") : TS("open");
+	return RunExternalProgram(item.program, op, item.params, TS(""), item.showWnd);
+}
+
+int WinUtils::MonitorAndTerminateProcesses(HINSTANCE hInstance, const std::vector<string_t>& targetProcesses, int checkInterval) {
 	WNDCLASSW wc{};
 	wc.lpfnWndProc = MonitorWindowProc;
 	wc.hInstance = hInstance;
@@ -328,7 +454,7 @@ int WinUtils::MonitorAndTerminateProcesses(HINSTANCE hInstance, const std::vecto
 	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 
 	if (RegisterClassW(&wc) == 0) {
-		logger.DLog(LogLevel::Error, format(L"RegisterClassW fail: {}", GetWindowsErrorMsg()));
+		logger.DLog(LogLevel::Error, format(TS("RegisterClassW fail: {}"), GetWindowsErrorMsg()));
 		return 1;
 	}
 

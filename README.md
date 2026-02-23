@@ -1,8 +1,10 @@
+中文 | [English](README_en.md)
+
 # WinUtils
 
 ## 项目介绍
 
-C++23 现代Windows微功能组件库
+C++23 现代Windows微功能组件库，所有功能均同时支持宽窄字节
 
 ## 功能介绍
 
@@ -16,7 +18,8 @@ C++23 现代Windows微功能组件库
 8. 进程/线程/窗口操作
 9. 完善单文件日志库
 10. 各类加密算法实现
-11. ...
+11. INI文件解析
+12. ...
 
 ## 环境依赖
 
@@ -26,7 +29,9 @@ Visual Studio 2022
 
 [hashlib](https://github.com/stbrumme/hash-library)(C++加密库)
 
+[mINI](https://github.com/metayeti/mINI)(C++INI解析器)
+
+
 ## 许可证
 
-本项目采用 MIT 许可证，详情参见 LICENSE 文件。
-
+本项目采用 MIT 许可证，详情参见 [LICENSE](LICENSE) 文件。

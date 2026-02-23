@@ -75,6 +75,9 @@
     <ClInclude Include="hashlib\sha256.h">
       <Filter>头文件\hashlib</Filter>
     </ClInclude>
+    <ClInclude Include="ini.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinUtils.cpp">
@@ -124,6 +127,9 @@
     </ClCompile>
     <ClCompile Include="hashlib\sha256.cpp">
       <Filter>源文件\hashlib</Filter>
+    </ClCompile>
+    <ClCompile Include="ini.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

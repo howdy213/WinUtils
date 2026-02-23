@@ -78,7 +78,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -96,7 +96,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -112,7 +112,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -130,7 +130,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -151,6 +151,7 @@
     <ClInclude Include="hashlib\sha256.h" />
     <ClInclude Include="hashlib\sha3.h" />
     <ClInclude Include="HttpConnect.h" />
+    <ClInclude Include="ini.h" />
     <ClInclude Include="Injector.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="StrConvert.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="hashlib\sha256.cpp" />
     <ClCompile Include="hashlib\sha3.cpp" />
     <ClCompile Include="HttpConnect.cpp" />
+    <ClCompile Include="ini.cpp" />
     <ClCompile Include="Injector.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="StrConvert.cpp">
