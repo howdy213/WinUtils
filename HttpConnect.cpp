@@ -1,13 +1,15 @@
-﻿#include "HttpConnect.h"
+﻿#include <cstring>
+#include <cerrno>
+#include <ws2tcpip.h>
+#include <winsock2.h>
+
+#include "HttpConnect.h"
 #include "StrConvert.h"
 #include "Logger.h"
-#include <cstring>
-#include <cerrno>
 #pragma comment(lib,"ws2_32.lib")
 using namespace WinUtils;
 using namespace std;
 static Logger logger(TS("HttpConnect"));
-
 HttpConnect::HttpConnect()
 {
 	WSADATA wsa = { 0 };
@@ -36,7 +38,7 @@ string_t HttpConnect::socketHttp(string_t host, string_t request)const
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
-	if ((rv = TF(GetAddrInfo)(host.c_str(), to_tstring(port).c_str(), &hints, &servinfo)) != 0)  {
+	if ((rv = TF(GetAddrInfo)(host.c_str(), to_tstring(port).c_str(), &hints, &servinfo)) != 0) {
 		logger.DLog(LogLevel::Error, format(TS("GetAddrInfo failed! Error:{} "), TF(gai_strerror)(rv)));
 		return TS("");
 	}
@@ -64,7 +66,6 @@ string_t HttpConnect::socketHttp(string_t host, string_t request)const
 	string temp_request = ConvertString<string>(request);
 	const char* ansi_request = temp_request.c_str();
 	send(sockfd, ansi_request, (int)request.length(), 0);
-	delete ansi_request;
 	ansi_request = 0;
 
 	char buf[4096] = { 0 };
@@ -79,10 +80,11 @@ string_t HttpConnect::socketHttp(string_t host, string_t request)const
 			break;
 		}
 	}
-
+	string_t res = ConvertString<string_t>((string)buf);
+	logger.DLog(LogLevel::Debug, TS("socketHttp response:\n") + res);
 	closesocket(sockfd);
 	buf[offset] = 0;
-	return ConvertString<string_t>((string)buf);
+	return res;
 }
 
 string_t HttpConnect::postData(string_t host, string_t path, string_t post_content)const
@@ -96,8 +98,9 @@ string_t HttpConnect::postData(string_t host, string_t path, string_t post_conte
 	stream << TS("Content-Length:") << post_content.length() << TS("\r\n");
 	stream << TS("Connection:close\r\n\r\n");
 	stream << post_content.c_str();
-
-	return socketHttp(host, stream.str());
+	string_t res = socketHttp(host, stream.str());
+	logger.DLog(LogLevel::Debug, TS("postData response:\n") + res);
+	return res;
 }
 
 string_t HttpConnect::getData(string_t host, string_t path, string_t get_content)const

@@ -4,34 +4,36 @@ English | [中文](README.md)
 
 ## Project Introduction
 
-A modern, lightweight C++23 utility component library for Windows. All functions support both ASCII and wide-character encodings.
+C++23 modern Windows micro-function component library, all functions support both wide and narrow character encodings.
 
 ## Features
 
-1. Lightweight command-line parser with multiple parsing modes
-2. Encapsulated common console functions
-3. Console menu system with multi-level menus and command invocation
-4. HTTP network library, wrapped over WinSock, supporting GET and POST methods
+1. Lightweight command line parser, supporting multiple parsing methods
+2. Encapsulation of common console functions
+3. Console menu, supporting multi-level menus and command invocation
+4. HTTP network library, encapsulating Winsock, supporting GET and POST methods
 5. DLL injector
 6. Windows service management
-7. String conversion utilities
-8. Process, thread, and window operations
-9. Full-featured single-file logging library
-10. Implementations of various encryption algorithms
-11. INI file parser
-12. ...
+7. String conversion
+8. Process/Thread/Window operations
+9. Comprehensive single-file log library
+10. Implementation of various encryption algorithms
+11. INI file parsing
+12. Registry reading and writing
+13. ...
 
-## Environment Requirements
+## Environment Dependencies
 
 Visual Studio 2022
 
-## Dependencies
+## Project Dependencies
 
-[hashlib](https://github.com/stbrumme/hash-library)(C++ cryptography library)
+[hashlib](https://github.com/stbrumme/hash-library) (C++ encryption library)
 
 [mINI](https://github.com/metayeti/mINI) (C++ INI parser)
 
+[WinReg](https://github.com/GiovanniDicanio/WinReg) (C++ registry reading/writing)
+
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) for details.
-
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
