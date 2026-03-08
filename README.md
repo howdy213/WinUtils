@@ -28,11 +28,11 @@ Visual Studio 2022
 
 ## 项目依赖
 
-[hashlib](https://github.com/stbrumme/hash-library)(C++加密库)
+[hashlib](https://github.com/stbrumme/hash-library)：C++加密库（[zlib 许可证](hashlib/LICENSE)）
 
-[mINI](https://github.com/metayeti/mINI)(C++INI解析器)
+[mINI](https://github.com/metayeti/mINI)：C++INI解析器（[MIT 许可证](LICENSE-mINI)）
 
-[WinReg](https://github.com/GiovanniDicanio/WinReg)(C++注册表读写)
+[WinReg](https://github.com/GiovanniDicanio/WinReg)：C++注册表读写（[MIT 许可证](LICENSE-WinReg)）
 
 
 ## 许可证
