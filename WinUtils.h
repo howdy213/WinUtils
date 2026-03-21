@@ -31,7 +31,8 @@
 #include <chrono>
 
 #include "WinUtilsDef.h"
-using FindProcCallback = std::function<bool(const PROCESSENTRY32W&)>;
+#include "AWDef.h"
+using FindProcCallback = std::function<bool(const TF(PROCESSENTRY32)&)>;
 
 namespace WinUtils {
 	struct LaunchItem {
@@ -44,8 +45,8 @@ namespace WinUtils {
 
 	// Process Enumeration
 	bool EnumProcesses(const FindProcCallback& callback);
-	std::vector<PROCESSENTRY32W> FindAllProcesses(const FindProcCallback& func);
-	std::optional<PROCESSENTRY32W> FindFirstProcess(const FindProcCallback& func);
+	std::vector<TF(PROCESSENTRY32)> FindAllProcesses(const FindProcCallback& func);
+	std::optional<TF(PROCESSENTRY32)> FindFirstProcess(const FindProcCallback& func);
 	bool EnableDebugPrivilege();
 
 	// Process Status & Operations

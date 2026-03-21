@@ -1,4 +1,4 @@
-/*
+﻿/*
  * The MIT License (MIT)
  * Copyright (c) 2026 howdy213
  *
@@ -25,71 +25,97 @@
 #include <vector>
 #include <map>
 #include <optional>
-#include <stdexcept>
-#include <cctype>
 #include <string_view>
 
 #include "WinUtilsDef.h"
 
+ // Convenience alias for the parsed data: map command name -> list of parameters
 using ParserData = std::map<WinUtils::string_t, std::vector<WinUtils::string_t>>;
 
-class WinUtils::CmdParser {
-public:
-    enum class ParseMode { None, Normal, NoFlag };
-    explicit CmdParser(bool caseInsensitive = false)
-        : m_caseInsensitive(caseInsensitive) {
-    }
+namespace WinUtils {
 
-    // Parse the command line std::string
-    [[nodiscard]] bool parse(string_view_t commandLine, ParseMode mode = ParseMode::Normal);
+    /**
+     * @brief A flexible command‑line parser that supports multiple prefixes,
+     *        quoted arguments, and the `--option=value` syntax.
+     *
+     * The parser recognises commands starting with:
+     *   - `-`   (short options, e.g. `-v`)
+     *   - `--`  (long options, e.g. `--verbose`)
+     *   - `/`   (Windows style, e.g. `/help`)
+     *
+     * A command may be immediately followed by an equals sign and a value:
+     *   `--output=file.txt`   -> command "output" with one parameter "file.txt"
+     *
+     * Quoted strings are preserved and the quotes are removed from stored values.
+     * The parser can operate in two modes:
+     *   - Normal   : tokens that start with a prefix are commands, all others are parameters.
+     *   - NoFlag   : the whole input is treated as a single command with no prefix.
+     *   - None     : auto‑detects based on the presence of any prefix character.
+     *
+     * Results are stored as a map from the normalized command name to a vector of parameters.
+     * The anonymous command (used in NoFlag mode) is stored under the empty string key.
+     */
+    class CmdParser {
+    public:
+        enum class ParseMode { None, Normal, NoFlag };
 
-    // Get parsing results (const/non-const overloads)
-    [[nodiscard]] const ParserData& result() const noexcept { return m_commands; }
-    [[nodiscard]] ParserData& result() noexcept { return m_commands; }
+        /**
+         * @brief Construct a parser.
+         * @param caseInsensitive If true, command names are matched case‑insensitively.
+         */
+        explicit CmdParser(bool caseInsensitive = false)
+            : m_caseInsensitive(caseInsensitive) {
+        }
 
-    // Check if the specified command exists
-    [[nodiscard]] bool hasCommand(string_view_t cmd) const;
+        /**
+         * @brief Parse a command line.
+         * @param commandLine The input string to parse.
+         * @param mode        Parsing mode (auto‑detect, normal, or no‑flag).
+         * @return true on success, false on syntax error (e.g. unmatched quotes).
+         */
+        [[nodiscard]] bool parse(string_view_t commandLine, ParseMode mode = ParseMode::Normal);
 
-    // Get the number of parameters for the specified command
-    [[nodiscard]] size_t getParamCount(string_view_t cmd) const noexcept;
+        /// Returns the parsed data (read‑only).
+        [[nodiscard]] const ParserData& result() const noexcept { return m_commands; }
 
-    // Safely get the parameter at the specified index for the given command
-    [[nodiscard]] std::optional<string_t> getParam(
-        string_view_t cmd, size_t index) const noexcept;
+        /// Returns the parsed data (modifiable).
+        [[nodiscard]] ParserData& result() noexcept { return m_commands; }
 
-    // Safely get all parameters for the specified command
-    std::vector<string_t> getParams(string_view_t cmd) const noexcept;
+        /// Check if a command (with any allowed prefix) exists.
+        [[nodiscard]] bool hasCommand(string_view_t cmd) const;
 
-    // Get all parsed command names
-    [[nodiscard]] std::vector<string_t> getAllCommands() const;
+        /// Return the number of parameters for the given command.
+        [[nodiscard]] size_t getParamCount(string_view_t cmd) const noexcept;
 
-    // Clear all parsing results
-    void clear() noexcept { m_commands.clear(); }
+        /// Safely retrieve a parameter at index for the given command.
+        [[nodiscard]] std::optional<string_t> getParam(string_view_t cmd, size_t index) const noexcept;
 
-    // Check if a token is valid
-    [[nodiscard]] static bool isTokenValid(string_view_t token) noexcept;
+        /// Retrieve all parameters for the given command.
+        std::vector<string_t> getParams(string_view_t cmd) const noexcept;
 
-    // Check if the token is wrapped with paired quotation marks
-    [[nodiscard]] static bool hasQuotation(string_view_t token) noexcept;
+        /// Return a list of all command names that were parsed.
+        [[nodiscard]] std::vector<string_t> getAllCommands() const;
 
-    // Remove quotation marks from both ends of the token
-    [[nodiscard]] static string_t removeQuotation(string_view_t token) noexcept;
+        /// Clear all parsed results.
+        void clear() noexcept { m_commands.clear(); }
 
-    // Check if all quotation marks in the command line are matched
-    [[nodiscard]] static bool isQuotationMatched(string_view_t input) noexcept;
+        // ----- Static helper functions -----
+        [[nodiscard]] static bool isTokenValid(string_view_t token) noexcept;
+        [[nodiscard]] static bool hasQuotation(string_view_t token) noexcept;
+        [[nodiscard]] static string_t removeQuotation(string_view_t token) noexcept;
+        [[nodiscard]] static bool isQuotationMatched(string_view_t input) noexcept;
+        [[nodiscard]] std::vector<string_t> tokenize(string_view_t input);
 
-    // Tokenize the input command line std::string into segments
-    [[nodiscard]] std::vector<string_t> tokenize(string_view_t input);
+    private:
+        // ----- Internal helpers -----
+        [[nodiscard]] bool isCommand(string_view_t token) const noexcept;
+        [[nodiscard]] string_t normalizeCommand(string_view_t cmd) const noexcept;
+        [[nodiscard]] static size_t getPrefixLength(string_view_t token) noexcept;
 
-private:
-    // Determine if the token is a valid command identifier
-    [[nodiscard]] bool isCommand(string_view_t token) const noexcept;
+        // ----- Data members -----
+        ParserData m_commands;            ///< Parsed results: command → parameters
+        bool m_caseInsensitive = false;   ///< Flag for case‑insensitive matching
+        bool m_parseSuccess = false;      ///< Indicates if the last parse succeeded
+    };
 
-    // Normalize command name (case-insensitive if enabled)
-    [[nodiscard]] string_t normalizeCommand(string_view_t cmd) const noexcept;
-
-private:
-    ParserData m_commands;                // Storage for parsing results
-    bool m_caseInsensitive = false;       // Whether command matching is case-insensitive
-    bool m_parseSuccess = false;          // Flag indicating if parsing succeeded
-};
+} // namespace WinUtils

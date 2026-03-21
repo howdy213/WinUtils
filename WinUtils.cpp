@@ -20,6 +20,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+#include "WinPch.h"
+
 #include <ShlObj.h>
 #include <format>
 #include <thread>
@@ -76,35 +78,35 @@ namespace WinUtils {
 			return false;
 		}
 
-		PROCESSENTRY32W entry{};
-		entry.dwSize = sizeof(PROCESSENTRY32W);
+		TF(PROCESSENTRY32) entry{};
+		entry.dwSize = sizeof(TF(PROCESSENTRY32));
 
-		if (!Process32FirstW(hSnapshot, &entry)) {
-			logger.DLog(LogLevel::Error, format(TS("Process32FirstW fail: {}"), GetWindowsErrorMsg()));
+		if (!TF(Process32First)(hSnapshot, &entry)) {
+			logger.DLog(LogLevel::Error, format(TS("TF(Process32First) fail: {}"), GetWindowsErrorMsg()));
 			CloseHandle(hSnapshot);
 			return false;
 		}
 
 		do {
 			if (!callback(entry)) break;
-		} while (Process32NextW(hSnapshot, &entry));
+		} while (TF(Process32Next)(hSnapshot, &entry));
 
 		CloseHandle(hSnapshot);
 		return true;
 	}
 
-	std::vector<PROCESSENTRY32W> FindAllProcesses(const FindProcCallback& func) {
-		vector<PROCESSENTRY32W> result;
-		EnumProcesses([&](const PROCESSENTRY32W& entry) {
+	std::vector<TF(PROCESSENTRY32)> FindAllProcesses(const FindProcCallback& func) {
+		vector<TF(PROCESSENTRY32)> result;
+		EnumProcesses([&](const TF(PROCESSENTRY32)& entry) {
 			if (func(entry)) result.push_back(entry);
 			return true;
 			});
 		return result;
 	}
 
-	std::optional<PROCESSENTRY32W> FindFirstProcess(const FindProcCallback& func) {
-		optional<PROCESSENTRY32W> result;
-		EnumProcesses([&](const PROCESSENTRY32W& entry) {
+	std::optional<TF(PROCESSENTRY32)> FindFirstProcess(const FindProcCallback& func) {
+		optional<TF(PROCESSENTRY32)> result;
+		EnumProcesses([&](const TF(PROCESSENTRY32)& entry) {
 			if (func(entry)) { result = entry; return false; }
 			return true;
 			});
@@ -142,15 +144,15 @@ namespace WinUtils {
 	}
 
 	bool IsProcessRunning(string_view_t processName) {
-		return FindFirstProcess([&](const PROCESSENTRY32W& entry) {
-			return entry.szExeFile == ConvertString<wstring>((string_t)processName);
+		return FindFirstProcess([&](const TF(PROCESSENTRY32)& entry) {
+			return entry.szExeFile == (string_t)processName;
 			}).has_value();
 	}
 
 	std::vector<DWORD> GetProcessIdsByName(string_view_t processName) {
 		vector<DWORD> pids;
-		EnumProcesses([&](const PROCESSENTRY32W& entry) {
-			if (entry.szExeFile == ConvertString<wstring>((string_t)processName)) pids.push_back(entry.th32ProcessID);
+		EnumProcesses([&](const TF(PROCESSENTRY32)& entry) {
+			if (entry.szExeFile == (string_t)processName) pids.push_back(entry.th32ProcessID);
 			return true;
 			});
 		return pids;
@@ -158,8 +160,8 @@ namespace WinUtils {
 
 	int TerminateProcessesByName(string_view_t processName) {
 		int closedCount = 0;
-		EnumProcesses([&](const PROCESSENTRY32W& entry) {
-			if (entry.szExeFile != ConvertString<wstring>((string_t)processName) || entry.th32ProcessID == GetCurrentProcessId())
+		EnumProcesses([&](const TF(PROCESSENTRY32)& entry) {
+			if (entry.szExeFile != (string_t)processName || entry.th32ProcessID == GetCurrentProcessId())
 				return true;
 
 			HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, entry.th32ProcessID);

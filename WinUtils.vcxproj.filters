@@ -81,6 +81,12 @@
     <ClInclude Include="WinReg.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="AWDef.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="WinPch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinUtils.cpp">
@@ -135,6 +141,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="WinReg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AWDef.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

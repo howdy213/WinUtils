@@ -20,11 +20,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+#include "WinPch.h"
 
 #include <cstring>
 #include <cerrno>
 #include <ws2tcpip.h>
-#include <winsock2.h>
 
 #include "HttpConnect.h"
 #include "StrConvert.h"

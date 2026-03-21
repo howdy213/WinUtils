@@ -20,6 +20,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+#include "WinPch.h"
+
+#include <iostream>
+
 #include "Console.h"
 using namespace WinUtils;
 bool Console::attach()
@@ -50,7 +54,6 @@ bool Console::require()
 	return false;
 }
 
-
 bool Console::isUnderConsole()
 {
 	return hasConsole;
@@ -66,9 +69,13 @@ bool Console::isOwnConsole()
 
 void Console::setLocale()
 {
+	std::wcin.imbue(std::locale(""));
+	std::wcout.imbue(std::locale(""));
+	/*
 	SetConsoleCP(CP_UTF8);
 	SetConsoleOutputCP(CP_UTF8);
 	setlocale(LC_ALL, "zh-CN.UTF-8");
+	*/
 }
 
 bool Console::setVisible(bool visible)

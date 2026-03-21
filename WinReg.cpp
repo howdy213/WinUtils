@@ -21,6 +21,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+#include "WinPch.h"
+
 #include "WinReg.h"
 using namespace WinUtils;
 using namespace std;
@@ -110,16 +112,16 @@ namespace WinUtils {
 		// E.g.:
 		//          Hello\0World\0\0
 		//------------------------------------------------------------------------------
-		[[nodiscard]] vector<wchar_t> BuildMultiString(const vector<string_t>& data)
+		[[nodiscard]] vector<char_t> BuildMultiString(const vector<string_t>& data)
 		{
 			// Special case of the empty multi-string
 			if (data.empty())
 			{
 				// Build a vector containing just two NULs
-				return vector<wchar_t>(2, L'\0');
+				return vector<char_t>(2, TS('\0'));
 			}
 
-			// Get the total length in wchar_ts of the multi-string
+			// Get the total length in char_ts of the multi-string
 			size_t totalLen = 0;
 			for (const auto& s : data)
 			{
@@ -131,7 +133,7 @@ namespace WinUtils {
 			totalLen++;
 
 			// Allocate a buffer to store the multi-string
-			vector<wchar_t> multiString;
+			vector<char_t> multiString;
 
 			// Reserve room in the vector to speed up the following insertion loop
 			multiString.reserve(totalLen);
@@ -147,21 +149,21 @@ namespace WinUtils {
 
 				// Don't forget to NUL-terminate the current string
 				// (or just insert L'\0' for empty strings)
-				multiString.emplace_back(L'\0');
+				multiString.emplace_back(TS('\0'));
 			}
 
 			// Add the last NUL-terminator
-			multiString.emplace_back(L'\0');
+			multiString.emplace_back(TS('\0'));
 
 			return multiString;
 		}
 
 
 		//------------------------------------------------------------------------------
-		// Return true if the wchar_t sequence stored in 'data' terminates
-		// with two null (L'\0') wchar_t's
+		// Return true if the char_t sequence stored in 'data' terminates
+		// with two null (L'\0') char_t's
 		//------------------------------------------------------------------------------
-		[[nodiscard]] bool IsDoubleNullTerminated(const vector<wchar_t>& data)
+		[[nodiscard]] bool IsDoubleNullTerminated(const vector<char_t>& data)
 		{
 			// First check that there's enough room for at least two nulls
 			if (data.size() < 2)
@@ -177,12 +179,12 @@ namespace WinUtils {
 
 
 		//------------------------------------------------------------------------------
-		// Given a sequence of wchar_ts representing a double-null-terminated string,
+		// Given a sequence of char_ts representing a double-null-terminated string,
 		// returns a vector of wstrings that represent the single strings.
 		//
 		// Also supports embedded empty strings in the sequence.
 		//------------------------------------------------------------------------------
-		[[nodiscard]] vector<string_t> ParseMultiString(const vector<wchar_t>& data)
+		[[nodiscard]] vector<string_t> ParseMultiString(const vector<char_t>& data)
 		{
 			// Make sure that there are two terminating L'\0's at the end of the sequence
 			if (!IsDoubleNullTerminated(data))
@@ -220,7 +222,7 @@ namespace WinUtils {
 			// -------------------------------------------------------------------------
 			//// *** Previous parsing code - Assumes an empty string terminates the sequence ***
 			//
-			//const wchar_t* currStringPtr = data.data();
+			//const char_t* currStringPtr = data.data();
 			//while (*currStringPtr != L'\0')
 			//{
 			//    // Current string is NUL-terminated, so get its length calling wcslen
@@ -235,13 +237,13 @@ namespace WinUtils {
 			// -------------------------------------------------------------------------
 			//
 
-			const wchar_t* currStringPtr = data.data();
-			const wchar_t* const endPtr = data.data() + data.size() - 1;
+			const char_t* currStringPtr = data.data();
+			const char_t* const endPtr = data.data() + data.size() - 1;
 
 			while (currStringPtr < endPtr)
 			{
-				// Current string is NUL-terminated, so get its length calling wcslen
-				const size_t currStringLength = wcslen(currStringPtr);
+				// Current string is NUL-terminated, so get its length calling constructor of string_t
+				const size_t currStringLength = string_t(currStringPtr).length();
 
 				// Add current string to the result vector
 				if (currStringLength > 0)
@@ -537,7 +539,7 @@ namespace WinUtils {
 	)
 	{
 		HKEY hKey = nullptr;
-		LSTATUS retCode = ::RegCreateKeyExW(
+		LSTATUS retCode = ::TF(RegCreateKeyEx)(
 			hKeyParent,
 			subKey.c_str(),
 			0,          // reserved
@@ -550,7 +552,7 @@ namespace WinUtils {
 		);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "RegCreateKeyExW failed." };
+			throw RegException{ retCode, "TF(RegCreateKeyEx) failed." };
 		}
 
 		// Safely close any previously opened key
@@ -568,7 +570,7 @@ namespace WinUtils {
 	)
 	{
 		HKEY hKey = nullptr;
-		LSTATUS retCode = ::RegOpenKeyExW(
+		LSTATUS retCode = ::TF(RegOpenKeyEx)(
 			hKeyParent,
 			subKey.c_str(),
 			REG_NONE,           // default options
@@ -577,7 +579,7 @@ namespace WinUtils {
 		);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "RegOpenKeyExW failed." };
+			throw RegException{ retCode, "TF(RegOpenKeyEx) failed." };
 		}
 
 		// Safely close any previously opened key
@@ -613,7 +615,7 @@ namespace WinUtils {
 	) noexcept
 	{
 		HKEY hKey = nullptr;
-		RegResult retCode{ ::RegCreateKeyExW(
+		RegResult retCode{ ::TF(RegCreateKeyEx)(
 			hKeyParent,
 			subKey.c_str(),
 			0,          // reserved
@@ -647,7 +649,7 @@ namespace WinUtils {
 	) noexcept
 	{
 		HKEY hKey = nullptr;
-		RegResult retCode{ ::RegOpenKeyExW(
+		RegResult retCode{ ::TF(RegOpenKeyEx)(
 			hKeyParent,
 			subKey.c_str(),
 			REG_NONE,           // default options
@@ -674,7 +676,7 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		LSTATUS retCode = ::RegSetValueExW(
+		LSTATUS retCode = ::TF(RegSetValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			0, // reserved
@@ -684,7 +686,7 @@ namespace WinUtils {
 		);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot write DWORD value: RegSetValueExW failed." };
+			throw RegException{ retCode, "Cannot write DWORD value: TF(RegSetValueEx) failed." };
 		}
 	}
 
@@ -693,7 +695,7 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		LSTATUS retCode = ::RegSetValueExW(
+		LSTATUS retCode = ::TF(RegSetValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			0, // reserved
@@ -703,7 +705,7 @@ namespace WinUtils {
 		);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot write QWORD value: RegSetValueExW failed." };
+			throw RegException{ retCode, "Cannot write QWORD value: TF(RegSetValueEx) failed." };
 		}
 	}
 
@@ -713,9 +715,9 @@ namespace WinUtils {
 		_ASSERTE(IsValid());
 
 		// String size including the terminating NUL, in bytes
-		const DWORD dataSize = details::SafeCastSizeToDword((data.length() + 1) * sizeof(wchar_t));
+		const DWORD dataSize = details::SafeCastSizeToDword((data.length() + 1) * sizeof(char_t));
 
-		LSTATUS retCode = ::RegSetValueExW(
+		LSTATUS retCode = ::TF(RegSetValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			0, // reserved
@@ -725,7 +727,7 @@ namespace WinUtils {
 		);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot write string value: RegSetValueExW failed." };
+			throw RegException{ retCode, "Cannot write string value: TF(RegSetValueEx) failed." };
 		}
 	}
 
@@ -735,9 +737,9 @@ namespace WinUtils {
 		_ASSERTE(IsValid());
 
 		// String size including the terminating NUL, in bytes
-		const DWORD dataSize = details::SafeCastSizeToDword((data.length() + 1) * sizeof(wchar_t));
+		const DWORD dataSize = details::SafeCastSizeToDword((data.length() + 1) * sizeof(char_t));
 
-		LSTATUS retCode = ::RegSetValueExW(
+		LSTATUS retCode = ::TF(RegSetValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			0, // reserved
@@ -747,7 +749,7 @@ namespace WinUtils {
 		);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot write expand string value: RegSetValueExW failed." };
+			throw RegException{ retCode, "Cannot write expand string value: TF(RegSetValueEx) failed." };
 		}
 	}
 
@@ -760,12 +762,12 @@ namespace WinUtils {
 		_ASSERTE(IsValid());
 
 		// First, we have to build a double-NUL-terminated multi-string from the input data
-		const vector<wchar_t> multiString = details::BuildMultiString(data);
+		const vector<char_t> multiString = details::BuildMultiString(data);
 
 		// Total size, in bytes, of the whole multi-string structure
-		const DWORD dataSize = details::SafeCastSizeToDword(multiString.size() * sizeof(wchar_t));
+		const DWORD dataSize = details::SafeCastSizeToDword(multiString.size() * sizeof(char_t));
 
-		LSTATUS retCode = ::RegSetValueExW(
+		LSTATUS retCode = ::TF(RegSetValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			0, // reserved
@@ -775,7 +777,7 @@ namespace WinUtils {
 		);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot write multi-string value: RegSetValueExW failed." };
+			throw RegException{ retCode, "Cannot write multi-string value: TF(RegSetValueEx) failed." };
 		}
 	}
 
@@ -787,7 +789,7 @@ namespace WinUtils {
 		// Total data size, in bytes
 		const DWORD dataSize = details::SafeCastSizeToDword(data.size());
 
-		LSTATUS retCode = ::RegSetValueExW(
+		LSTATUS retCode = ::TF(RegSetValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			0, // reserved
@@ -797,7 +799,7 @@ namespace WinUtils {
 		);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot write binary data value: RegSetValueExW failed." };
+			throw RegException{ retCode, "Cannot write binary data value: TF(RegSetValueEx) failed." };
 		}
 	}
 
@@ -805,7 +807,7 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		return RegResult{ ::RegSetValueExW(
+		return RegResult{ ::TF(RegSetValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			0, // reserved
@@ -821,7 +823,7 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		return RegResult{ ::RegSetValueExW(
+		return RegResult{ ::TF(RegSetValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			0, // reserved
@@ -838,9 +840,9 @@ namespace WinUtils {
 		_ASSERTE(IsValid());
 
 		// String size including the terminating NUL, in bytes
-		const DWORD dataSize = details::SafeCastSizeToDword((data.length() + 1) * sizeof(wchar_t));
+		const DWORD dataSize = details::SafeCastSizeToDword((data.length() + 1) * sizeof(char_t));
 
-		return RegResult{ ::RegSetValueExW(
+		return RegResult{ ::TF(RegSetValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			0, // reserved
@@ -857,9 +859,9 @@ namespace WinUtils {
 		_ASSERTE(IsValid());
 
 		// String size including the terminating NUL, in bytes
-		const DWORD dataSize = details::SafeCastSizeToDword((data.length() + 1) * sizeof(wchar_t));
+		const DWORD dataSize = details::SafeCastSizeToDword((data.length() + 1) * sizeof(char_t));
 
-		return RegResult{ ::RegSetValueExW(
+		return RegResult{ ::TF(RegSetValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			0, // reserved
@@ -881,12 +883,12 @@ namespace WinUtils {
 		// since a *dynamic allocation* happens for creating the vector in BuildMultiString.
 		// And, if dynamic memory allocations fail, an exception is thrown.
 		//
-		const vector<wchar_t> multiString = details::BuildMultiString(data);
+		const vector<char_t> multiString = details::BuildMultiString(data);
 
 		// Total size, in bytes, of the whole multi-string structure
-		const DWORD dataSize = details::SafeCastSizeToDword(multiString.size() * sizeof(wchar_t));
+		const DWORD dataSize = details::SafeCastSizeToDword(multiString.size() * sizeof(char_t));
 
-		return RegResult{ ::RegSetValueExW(
+		return RegResult{ ::TF(RegSetValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			0, // reserved
@@ -905,7 +907,7 @@ namespace WinUtils {
 		// Total data size, in bytes
 		const DWORD dataSize = details::SafeCastSizeToDword(data.size());
 
-		return RegResult{ ::RegSetValueExW(
+		return RegResult{ ::TF(RegSetValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			0, // reserved
@@ -924,7 +926,7 @@ namespace WinUtils {
 		DWORD dataSize = sizeof(data);   // size of data, in bytes
 
 		constexpr DWORD flags = RRF_RT_REG_DWORD;
-		LSTATUS retCode = ::RegGetValueW(
+		LSTATUS retCode = ::TF(RegGetValue)(
 			m_hKey,
 			nullptr, // no subkey
 			valueName.c_str(),
@@ -935,7 +937,7 @@ namespace WinUtils {
 		);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot get DWORD value: RegGetValueW failed." };
+			throw RegException{ retCode, "Cannot get DWORD value: TF(RegGetValue) failed." };
 		}
 
 		return data;
@@ -950,7 +952,7 @@ namespace WinUtils {
 		DWORD dataSize = sizeof(data);   // size of data, in bytes
 
 		constexpr DWORD flags = RRF_RT_REG_QWORD;
-		LSTATUS retCode = ::RegGetValueW(
+		LSTATUS retCode = ::TF(RegGetValue)(
 			m_hKey,
 			nullptr, // no subkey
 			valueName.c_str(),
@@ -961,7 +963,7 @@ namespace WinUtils {
 		);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot get QWORD value: RegGetValueW failed." };
+			throw RegException{ retCode, "Cannot get QWORD value: TF(RegGetValue) failed." };
 		}
 
 		return data;
@@ -982,7 +984,7 @@ namespace WinUtils {
 		while (retCode == ERROR_MORE_DATA)
 		{
 			// Get the size of the result string
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -993,16 +995,16 @@ namespace WinUtils {
 			);
 			if (retCode != ERROR_SUCCESS)
 			{
-				throw RegException{ retCode, "Cannot get the size of the string value: RegGetValueW failed." };
+				throw RegException{ retCode, "Cannot get the size of the string value: TF(RegGetValue) failed." };
 			}
 
 			// Allocate a string of proper size.
 			// Note that dataSize is in bytes and includes the terminating NUL;
-			// we have to convert the size from bytes to wchar_ts for wstring::resize.
-			result.resize(dataSize / sizeof(wchar_t));
+			// we have to convert the size from bytes to char_ts for wstring::resize.
+			result.resize(dataSize / sizeof(char_t));
 
 			// Call RegGetValue for the second time to read the string's content
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -1015,11 +1017,11 @@ namespace WinUtils {
 
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot get the string value: RegGetValueW failed." };
+			throw RegException{ retCode, "Cannot get the string value: TF(RegGetValue) failed." };
 		}
 
 		// Remove the NUL terminator scribbled by RegGetValue from the wstring
-		result.resize((dataSize / sizeof(wchar_t)) - 1);
+		result.resize((dataSize / sizeof(char_t)) - 1);
 
 		return result;
 	}
@@ -1050,7 +1052,7 @@ namespace WinUtils {
 		while (retCode == ERROR_MORE_DATA)
 		{
 			// Get the size of the result string
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -1062,16 +1064,16 @@ namespace WinUtils {
 			if (retCode != ERROR_SUCCESS)
 			{
 				throw RegException{ retCode,
-									"Cannot get the size of the expand string value: RegGetValueW failed." };
+									"Cannot get the size of the expand string value: TF(RegGetValue) failed." };
 			}
 
 			// Allocate a string of proper size.
 			// Note that dataSize is in bytes and includes the terminating NUL;
-			// we have to convert the size from bytes to wchar_ts for wstring::resize.
-			result.resize(dataSize / sizeof(wchar_t));
+			// we have to convert the size from bytes to char_ts for wstring::resize.
+			result.resize(dataSize / sizeof(char_t));
 
 			// Call RegGetValue for the second time to read the string's content
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -1084,11 +1086,11 @@ namespace WinUtils {
 
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot get the expand string value: RegGetValueW failed." };
+			throw RegException{ retCode, "Cannot get the expand string value: TF(RegGetValue) failed." };
 		}
 
 		// Remove the NUL terminator scribbled by RegGetValue from the wstring
-		result.resize((dataSize / sizeof(wchar_t)) - 1);
+		result.resize((dataSize / sizeof(char_t)) - 1);
 
 		return result;
 	}
@@ -1099,7 +1101,7 @@ namespace WinUtils {
 		_ASSERTE(IsValid());
 
 		// Room for the result multi-string, to be read from the registry
-		vector<wchar_t> multiString;
+		vector<char_t> multiString;
 
 		// Size of the multi-string, in bytes
 		DWORD dataSize = 0;
@@ -1111,7 +1113,7 @@ namespace WinUtils {
 		while (retCode == ERROR_MORE_DATA)
 		{
 			// Request the size of the multi-string, in bytes
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -1123,16 +1125,16 @@ namespace WinUtils {
 			if (retCode != ERROR_SUCCESS)
 			{
 				throw RegException{ retCode,
-									"Cannot get the size of the multi-string value: RegGetValueW failed." };
+									"Cannot get the size of the multi-string value: TF(RegGetValue) failed." };
 			}
 
 			// Allocate room for the result multi-string.
-			// Note that dataSize is in bytes, but our vector<wchar_t>::resize method requires size
-			// to be expressed in wchar_ts.
-			multiString.resize(dataSize / sizeof(wchar_t));
+			// Note that dataSize is in bytes, but our vector<char_t>::resize method requires size
+			// to be expressed in char_ts.
+			multiString.resize(dataSize / sizeof(char_t));
 
 			// Call RegGetValue for the second time to read the multi-string's content into the vector
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,                // no subkey
 				valueName.c_str(),
@@ -1145,13 +1147,13 @@ namespace WinUtils {
 
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot get the multi-string value: RegGetValueW failed." };
+			throw RegException{ retCode, "Cannot get the multi-string value: TF(RegGetValue) failed." };
 		}
 
 		// Resize vector to the actual size returned by the last call to RegGetValue.
-		// Note that the vector is a vector of wchar_ts, instead the size returned by RegGetValue
-		// is in bytes, so we have to scale from bytes to wchar_t count.
-		multiString.resize(dataSize / sizeof(wchar_t));
+		// Note that the vector is a vector of char_ts, instead the size returned by RegGetValue
+		// is in bytes, so we have to scale from bytes to char_t count.
+		multiString.resize(dataSize / sizeof(char_t));
 
 		// Convert the double-null-terminated string structure to a vector<wstring>,
 		// and return that back to the caller
@@ -1176,7 +1178,7 @@ namespace WinUtils {
 		while (retCode == ERROR_MORE_DATA)
 		{
 			// Request the size of the binary data, in bytes
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -1188,7 +1190,7 @@ namespace WinUtils {
 			if (retCode != ERROR_SUCCESS)
 			{
 				throw RegException{ retCode,
-									"Cannot get the size of the binary data: RegGetValueW failed." };
+									"Cannot get the size of the binary data: TF(RegGetValue) failed." };
 			}
 
 			// Allocate a buffer of proper size to store the binary data
@@ -1203,7 +1205,7 @@ namespace WinUtils {
 			}
 
 			// Call RegGetValue for the second time to read the binary data content into the vector
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,            // no subkey
 				valueName.c_str(),
@@ -1216,7 +1218,7 @@ namespace WinUtils {
 
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot get the binary data: RegGetValueW failed." };
+			throw RegException{ retCode, "Cannot get the binary data: TF(RegGetValue) failed." };
 		}
 
 		// Resize vector to the actual size returned by the last call to RegGetValue
@@ -1246,7 +1248,7 @@ namespace WinUtils {
 		while (retCode == ERROR_MORE_DATA)
 		{
 			// Request the size of the binary data, in bytes
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -1258,7 +1260,7 @@ namespace WinUtils {
 			if (retCode != ERROR_SUCCESS)
 			{
 				throw RegException{ retCode,
-									"Cannot get the size of the raw binary data: RegGetValueW failed." };
+									"Cannot get the size of the raw binary data: TF(RegGetValue) failed." };
 			}
 
 			// Allocate a buffer of proper size to store the binary data
@@ -1273,7 +1275,7 @@ namespace WinUtils {
 			}
 
 			// Call RegGetValue for the second time to read the binary data content into the vector
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,            // no subkey
 				valueName.c_str(),
@@ -1286,7 +1288,7 @@ namespace WinUtils {
 
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot get the raw binary data: RegGetValueW failed." };
+			throw RegException{ retCode, "Cannot get the raw binary data: TF(RegGetValue) failed." };
 		}
 
 		// Resize vector to the actual size returned by the last call to RegGetValue
@@ -1306,7 +1308,7 @@ namespace WinUtils {
 		DWORD dataSize = sizeof(data);   // size of data, in bytes
 
 		constexpr DWORD flags = RRF_RT_REG_DWORD;
-		LSTATUS retCode = ::RegGetValueW(
+		LSTATUS retCode = ::TF(RegGetValue)(
 			m_hKey,
 			nullptr, // no subkey
 			valueName.c_str(),
@@ -1334,7 +1336,7 @@ namespace WinUtils {
 		DWORD dataSize = sizeof(data);   // size of data, in bytes
 
 		constexpr DWORD flags = RRF_RT_REG_QWORD;
-		LSTATUS retCode = ::RegGetValueW(
+		LSTATUS retCode = ::TF(RegGetValue)(
 			m_hKey,
 			nullptr, // no subkey
 			valueName.c_str(),
@@ -1369,7 +1371,7 @@ namespace WinUtils {
 		while (retCode == ERROR_MORE_DATA)
 		{
 			// Get the size of the result string
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -1385,11 +1387,11 @@ namespace WinUtils {
 
 			// Allocate a string of proper size.
 			// Note that dataSize is in bytes and includes the terminating NUL;
-			// we have to convert the size from bytes to wchar_ts for wstring::resize.
-			result.resize(dataSize / sizeof(wchar_t));
+			// we have to convert the size from bytes to char_ts for wstring::resize.
+			result.resize(dataSize / sizeof(char_t));
 
 			// Call RegGetValue for the second time to read the string's content
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -1406,7 +1408,7 @@ namespace WinUtils {
 		}
 
 		// Remove the NUL terminator scribbled by RegGetValue from the wstring
-		result.resize((dataSize / sizeof(wchar_t)) - 1);
+		result.resize((dataSize / sizeof(char_t)) - 1);
 
 		return RegExpected<RegValueType>{ result };
 	}
@@ -1436,7 +1438,7 @@ namespace WinUtils {
 		while (retCode == ERROR_MORE_DATA)
 		{
 			// Get the size of the result string
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -1452,11 +1454,11 @@ namespace WinUtils {
 
 			// Allocate a string of proper size.
 			// Note that dataSize is in bytes and includes the terminating NUL;
-			// we have to convert the size from bytes to wchar_ts for wstring::resize.
-			result.resize(dataSize / sizeof(wchar_t));
+			// we have to convert the size from bytes to char_ts for wstring::resize.
+			result.resize(dataSize / sizeof(char_t));
 
 			// Call RegGetValue for the second time to read the string's content
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -1473,7 +1475,7 @@ namespace WinUtils {
 		}
 
 		// Remove the NUL terminator scribbled by RegGetValue from the wstring
-		result.resize((dataSize / sizeof(wchar_t)) - 1);
+		result.resize((dataSize / sizeof(char_t)) - 1);
 
 		return RegExpected<RegValueType>{ result };
 	}
@@ -1489,7 +1491,7 @@ namespace WinUtils {
 		constexpr DWORD flags = RRF_RT_REG_MULTI_SZ;
 
 		// Room for the result multi-string
-		vector<wchar_t> data;
+		vector<char_t> data;
 
 		// Size of the multi-string, in bytes
 		DWORD dataSize = 0;
@@ -1499,7 +1501,7 @@ namespace WinUtils {
 		while (retCode == ERROR_MORE_DATA)
 		{
 			// Request the size of the multi-string, in bytes
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -1514,12 +1516,12 @@ namespace WinUtils {
 			}
 
 			// Allocate room for the result multi-string.
-			// Note that dataSize is in bytes, but our vector<wchar_t>::resize method requires size
-			// to be expressed in wchar_ts.
-			data.resize(dataSize / sizeof(wchar_t));
+			// Note that dataSize is in bytes, but our vector<char_t>::resize method requires size
+			// to be expressed in char_ts.
+			data.resize(dataSize / sizeof(char_t));
 
 			// Call RegGetValue for the second time to read the multi-string's content into the vector
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,        // no subkey
 				valueName.c_str(),
@@ -1536,9 +1538,9 @@ namespace WinUtils {
 		}
 
 		// Resize vector to the actual size returned by the last call to RegGetValue.
-		// Note that the vector is a vector of wchar_ts, instead the size returned by RegGetValue
-		// is in bytes, so we have to scale from bytes to wchar_t count.
-		data.resize(dataSize / sizeof(wchar_t));
+		// Note that the vector is a vector of char_ts, instead the size returned by RegGetValue
+		// is in bytes, so we have to scale from bytes to char_t count.
+		data.resize(dataSize / sizeof(char_t));
 
 		// Convert the double-null-terminated string structure to a vector<wstring>,
 		// and return that back to the caller
@@ -1565,7 +1567,7 @@ namespace WinUtils {
 		while (retCode == ERROR_MORE_DATA)
 		{
 			// Request the size of the binary data, in bytes
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -1591,7 +1593,7 @@ namespace WinUtils {
 			}
 
 			// Call RegGetValue for the second time to read the binary data content into the vector
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,        // no subkey
 				valueName.c_str(),
@@ -1636,7 +1638,7 @@ namespace WinUtils {
 		while (retCode == ERROR_MORE_DATA)
 		{
 			// Request the size of the binary data, in bytes
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,    // no subkey
 				valueName.c_str(),
@@ -1662,7 +1664,7 @@ namespace WinUtils {
 			}
 
 			// Call RegGetValue for the second time to read the binary data content into the vector
-			retCode = ::RegGetValueW(
+			retCode = ::TF(RegGetValue)(
 				m_hKey,
 				nullptr,        // no subkey
 				valueName.c_str(),
@@ -1693,7 +1695,7 @@ namespace WinUtils {
 		// and the maximum length of the subkey names
 		DWORD subKeyCount = 0;
 		DWORD maxSubKeyNameLen = 0;
-		LSTATUS retCode = ::RegQueryInfoKeyW(
+		LSTATUS retCode = ::TF(RegQueryInfoKey)(
 			m_hKey,
 			nullptr,    // no user-defined class
 			nullptr,    // no user-defined class size
@@ -1711,7 +1713,7 @@ namespace WinUtils {
 		{
 			throw RegException{
 				retCode,
-				"RegQueryInfoKeyW failed while preparing for subkey enumeration."
+				"TF(RegQueryInfoKey) failed while preparing for subkey enumeration."
 			};
 		}
 
@@ -1721,7 +1723,7 @@ namespace WinUtils {
 		maxSubKeyNameLen++;
 
 		// Preallocate a buffer for the subkey names
-		auto nameBuffer = make_unique<wchar_t[]>(maxSubKeyNameLen);
+		auto nameBuffer = make_unique<char_t[]>(maxSubKeyNameLen);
 
 		// The result subkey names will be stored here
 		vector<string_t> subkeyNames;
@@ -1734,7 +1736,7 @@ namespace WinUtils {
 		{
 			// Get the name of the current subkey
 			DWORD subKeyNameLen = maxSubKeyNameLen;
-			retCode = ::RegEnumKeyExW(
+			retCode = ::TF(RegEnumKeyEx)(
 				m_hKey,
 				index,
 				nameBuffer.get(),
@@ -1746,7 +1748,7 @@ namespace WinUtils {
 			);
 			if (retCode != ERROR_SUCCESS)
 			{
-				throw RegException{ retCode, "Cannot enumerate subkeys: RegEnumKeyExW failed." };
+				throw RegException{ retCode, "Cannot enumerate subkeys: TF(RegEnumKeyEx) failed." };
 			}
 
 			// On success, the ::RegEnumKeyEx API writes the length of the
@@ -1768,7 +1770,7 @@ namespace WinUtils {
 		// and the maximum length of the value names
 		DWORD valueCount = 0;
 		DWORD maxValueNameLen = 0;
-		LSTATUS retCode = ::RegQueryInfoKeyW(
+		LSTATUS retCode = ::TF(RegQueryInfoKey)(
 			m_hKey,
 			nullptr,    // no user-defined class
 			nullptr,    // no user-defined class size
@@ -1786,7 +1788,7 @@ namespace WinUtils {
 		{
 			throw RegException{
 				retCode,
-				"RegQueryInfoKeyW failed while preparing for value enumeration."
+				"TF(RegQueryInfoKey) failed while preparing for value enumeration."
 			};
 		}
 
@@ -1796,7 +1798,7 @@ namespace WinUtils {
 		maxValueNameLen++;
 
 		// Preallocate a buffer for the value names
-		auto nameBuffer = make_unique<wchar_t[]>(maxValueNameLen);
+		auto nameBuffer = make_unique<char_t[]>(maxValueNameLen);
 
 		// The value names and types will be stored here
 		vector<pair<string_t, DWORD>> valueInfo;
@@ -1810,7 +1812,7 @@ namespace WinUtils {
 			// Get the name and the type of the current value
 			DWORD valueNameLen = maxValueNameLen;
 			DWORD valueType = 0;
-			retCode = ::RegEnumValueW(
+			retCode = ::TF(RegEnumValue)(
 				m_hKey,
 				index,
 				nameBuffer.get(),
@@ -1822,7 +1824,7 @@ namespace WinUtils {
 			);
 			if (retCode != ERROR_SUCCESS)
 			{
-				throw RegException{ retCode, "Cannot enumerate values: RegEnumValueW failed." };
+				throw RegException{ retCode, "Cannot enumerate values: TF(RegEnumValue) failed." };
 			}
 
 			// On success, the RegEnumValue API writes the length of the
@@ -1843,8 +1845,8 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		// Invoke RegGetValueW to just check if the input value exists under the current key
-		LSTATUS retCode = ::RegGetValueW(
+		// Invoke TF(RegGetValue) to just check if the input value exists under the current key
+		LSTATUS retCode = ::TF(RegGetValue)(
 			m_hKey,             // current key
 			nullptr,            // no subkey - check value in current key
 			valueName.c_str(),  // value name
@@ -1867,7 +1869,7 @@ namespace WinUtils {
 			// Some other error occurred - signal it by throwing an exception
 			throw RegException{
 				retCode,
-				"RegGetValueW failed when checking if the current key contains the specified value."
+				"TF(RegGetValue) failed when checking if the current key contains the specified value."
 			};
 		}
 	}
@@ -1878,9 +1880,9 @@ namespace WinUtils {
 		_ASSERTE(IsValid());
 
 		// Let's try and open the specified subKey, then check the return code
-		// of RegOpenKeyExW to figure out if the subKey exists or not.
+		// of TF(RegOpenKeyEx) to figure out if the subKey exists or not.
 		HKEY hSubKey = nullptr;
-		LSTATUS retCode = ::RegOpenKeyExW(
+		LSTATUS retCode = ::TF(RegOpenKeyEx)(
 			m_hKey,
 			subKey.c_str(),
 			0,
@@ -1907,7 +1909,7 @@ namespace WinUtils {
 			// Some other error occurred - signal it by throwing an exception
 			throw RegException{
 				retCode,
-				"RegOpenKeyExW failed when checking if the current key contains the specified sub-key."
+				"TF(RegOpenKeyEx) failed when checking if the current key contains the specified sub-key."
 			};
 		}
 	}
@@ -1923,7 +1925,7 @@ namespace WinUtils {
 		// and the maximum length of the subkey names
 		DWORD subKeyCount = 0;
 		DWORD maxSubKeyNameLen = 0;
-		LSTATUS retCode = ::RegQueryInfoKeyW(
+		LSTATUS retCode = ::TF(RegQueryInfoKey)(
 			m_hKey,
 			nullptr,    // no user-defined class
 			nullptr,    // no user-defined class size
@@ -1948,7 +1950,7 @@ namespace WinUtils {
 		maxSubKeyNameLen++;
 
 		// Preallocate a buffer for the subkey names
-		auto nameBuffer = make_unique<wchar_t[]>(maxSubKeyNameLen);
+		auto nameBuffer = make_unique<char_t[]>(maxSubKeyNameLen);
 
 		// The result subkey names will be stored here
 		vector<string_t> subkeyNames;
@@ -1961,7 +1963,7 @@ namespace WinUtils {
 		{
 			// Get the name of the current subkey
 			DWORD subKeyNameLen = maxSubKeyNameLen;
-			retCode = ::RegEnumKeyExW(
+			retCode = ::TF(RegEnumKeyEx)(
 				m_hKey,
 				index,
 				nameBuffer.get(),
@@ -1997,7 +1999,7 @@ namespace WinUtils {
 		// and the maximum length of the value names
 		DWORD valueCount = 0;
 		DWORD maxValueNameLen = 0;
-		LSTATUS retCode = ::RegQueryInfoKeyW(
+		LSTATUS retCode = ::TF(RegQueryInfoKey)(
 			m_hKey,
 			nullptr,    // no user-defined class
 			nullptr,    // no user-defined class size
@@ -2022,7 +2024,7 @@ namespace WinUtils {
 		maxValueNameLen++;
 
 		// Preallocate a buffer for the value names
-		auto nameBuffer = make_unique<wchar_t[]>(maxValueNameLen);
+		auto nameBuffer = make_unique<char_t[]>(maxValueNameLen);
 
 		// The value names and types will be stored here
 		vector<pair<string_t, DWORD>> valueInfo;
@@ -2036,7 +2038,7 @@ namespace WinUtils {
 			// Get the name and the type of the current value
 			DWORD valueNameLen = maxValueNameLen;
 			DWORD valueType = 0;
-			retCode = ::RegEnumValueW(
+			retCode = ::TF(RegEnumValue)(
 				m_hKey,
 				index,
 				nameBuffer.get(),
@@ -2069,8 +2071,8 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		// Invoke RegGetValueW to just check if the input value exists under the current key
-		LSTATUS retCode = ::RegGetValueW(
+		// Invoke TF(RegGetValue) to just check if the input value exists under the current key
+		LSTATUS retCode = ::TF(RegGetValue)(
 			m_hKey,             // current key
 			nullptr,            // no subkey - check value in current key
 			valueName.c_str(),  // value name
@@ -2101,9 +2103,9 @@ namespace WinUtils {
 		_ASSERTE(IsValid());
 
 		// Let's try and open the specified subKey, then check the return code
-		// of RegOpenKeyExW to figure out if the subKey exists or not.
+		// of TF(RegOpenKeyEx) to figure out if the subKey exists or not.
 		HKEY hSubKey = nullptr;
-		LSTATUS retCode = ::RegOpenKeyExW(
+		LSTATUS retCode = ::TF(RegOpenKeyEx)(
 			m_hKey,
 			subKey.c_str(),
 			0,
@@ -2139,7 +2141,7 @@ namespace WinUtils {
 
 		DWORD typeId = 0;     // will be returned by RegQueryValueEx
 
-		LSTATUS retCode = ::RegQueryValueExW(
+		LSTATUS retCode = ::TF(RegQueryValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			nullptr,    // reserved
@@ -2150,7 +2152,7 @@ namespace WinUtils {
 
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "Cannot get the value type: RegQueryValueExW failed." };
+			throw RegException{ retCode, "Cannot get the value type: TF(RegQueryValueEx) failed." };
 		}
 
 		return typeId;
@@ -2165,7 +2167,7 @@ namespace WinUtils {
 
 		DWORD typeId = 0;     // will be returned by RegQueryValueEx
 
-		LSTATUS retCode = ::RegQueryValueExW(
+		LSTATUS retCode = ::TF(RegQueryValueEx)(
 			m_hKey,
 			valueName.c_str(),
 			nullptr,    // reserved
@@ -2188,7 +2190,7 @@ namespace WinUtils {
 		_ASSERTE(IsValid());
 
 		InfoKey infoKey{};
-		LSTATUS retCode = ::RegQueryInfoKeyW(
+		LSTATUS retCode = ::TF(RegQueryInfoKey)(
 			m_hKey,
 			nullptr,
 			nullptr,
@@ -2204,7 +2206,7 @@ namespace WinUtils {
 		);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "RegQueryInfoKeyW failed." };
+			throw RegException{ retCode, "TF(RegQueryInfoKey) failed." };
 		}
 
 		return infoKey;
@@ -2218,7 +2220,7 @@ namespace WinUtils {
 		using ReturnType = RegKey::InfoKey;
 
 		InfoKey infoKey{};
-		LSTATUS retCode = ::RegQueryInfoKeyW(
+		LSTATUS retCode = ::TF(RegQueryInfoKey)(
 			m_hKey,
 			nullptr,
 			nullptr,
@@ -2276,10 +2278,10 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		LSTATUS retCode = ::RegDeleteValueW(m_hKey, valueName.c_str());
+		LSTATUS retCode = ::TF(RegDeleteValue)(m_hKey, valueName.c_str());
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "RegDeleteValueW failed." };
+			throw RegException{ retCode, "TF(RegDeleteValue) failed." };
 		}
 	}
 
@@ -2288,7 +2290,7 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		return RegResult{ ::RegDeleteValueW(m_hKey, valueName.c_str()) };
+		return RegResult{ ::TF(RegDeleteValue)(m_hKey, valueName.c_str()) };
 	}
 
 
@@ -2296,10 +2298,10 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		LSTATUS retCode = ::RegDeleteKeyExW(m_hKey, subKey.c_str(), desiredAccess, 0);
+		LSTATUS retCode = ::TF(RegDeleteKeyEx)(m_hKey, subKey.c_str(), desiredAccess, 0);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "RegDeleteKeyExW failed." };
+			throw RegException{ retCode, "TF(RegDeleteKeyEx) failed." };
 		}
 	}
 
@@ -2309,7 +2311,7 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		return RegResult{ ::RegDeleteKeyExW(m_hKey, subKey.c_str(), desiredAccess, 0) };
+		return RegResult{ ::TF(RegDeleteKeyEx)(m_hKey, subKey.c_str(), desiredAccess, 0) };
 	}
 
 
@@ -2317,10 +2319,10 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		LSTATUS retCode = ::RegDeleteTreeW(m_hKey, subKey.c_str());
+		LSTATUS retCode = ::TF(RegDeleteTree)(m_hKey, subKey.c_str());
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "RegDeleteTreeW failed." };
+			throw RegException{ retCode, "TF(RegDeleteTree) failed." };
 		}
 	}
 
@@ -2329,7 +2331,7 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		return RegResult{ ::RegDeleteTreeW(m_hKey, subKey.c_str()) };
+		return RegResult{ ::TF(RegDeleteTree)(m_hKey, subKey.c_str()) };
 	}
 
 
@@ -2337,10 +2339,10 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		LSTATUS retCode = ::RegCopyTreeW(m_hKey, sourceSubKey.c_str(), destKey.Get());
+		LSTATUS retCode = ::TF(RegCopyTree)(m_hKey, sourceSubKey.c_str(), destKey.Get());
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "RegCopyTreeW failed." };
+			throw RegException{ retCode, "TF(RegCopyTree) failed." };
 		}
 	}
 
@@ -2350,7 +2352,7 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		return RegResult{ ::RegCopyTreeW(m_hKey, sourceSubKey.c_str(), destKey.Get()) };
+		return RegResult{ ::TF(RegCopyTree)(m_hKey, sourceSubKey.c_str(), destKey.Get()) };
 	}
 
 
@@ -2378,10 +2380,10 @@ namespace WinUtils {
 	{
 		Close();
 
-		LSTATUS retCode = ::RegLoadKeyW(m_hKey, subKey.c_str(), filename.c_str());
+		LSTATUS retCode = ::TF(RegLoadKey)(m_hKey, subKey.c_str(), filename.c_str());
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "RegLoadKeyW failed." };
+			throw RegException{ retCode, "TF(RegLoadKey) failed." };
 		}
 	}
 
@@ -2391,7 +2393,7 @@ namespace WinUtils {
 	{
 		Close();
 
-		return RegResult{ ::RegLoadKeyW(m_hKey, subKey.c_str(), filename.c_str()) };
+		return RegResult{ ::TF(RegLoadKey)(m_hKey, subKey.c_str(), filename.c_str()) };
 	}
 
 
@@ -2402,10 +2404,10 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		LSTATUS retCode = ::RegSaveKeyW(m_hKey, filename.c_str(), securityAttributes);
+		LSTATUS retCode = ::TF(RegSaveKey)(m_hKey, filename.c_str(), securityAttributes);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "RegSaveKeyW failed." };
+			throw RegException{ retCode, "TF(RegSaveKey) failed." };
 		}
 	}
 
@@ -2417,7 +2419,7 @@ namespace WinUtils {
 	{
 		_ASSERTE(IsValid());
 
-		return RegResult{ ::RegSaveKeyW(m_hKey, filename.c_str(), securityAttributes) };
+		return RegResult{ ::TF(RegSaveKey)(m_hKey, filename.c_str(), securityAttributes) };
 	}
 
 
@@ -2459,10 +2461,10 @@ namespace WinUtils {
 		Close();
 
 		HKEY hKeyResult = nullptr;
-		LSTATUS retCode = ::RegConnectRegistryW(machineName.c_str(), hKeyPredefined, &hKeyResult);
+		LSTATUS retCode = ::TF(RegConnectRegistry)(machineName.c_str(), hKeyPredefined, &hKeyResult);
 		if (retCode != ERROR_SUCCESS)
 		{
-			throw RegException{ retCode, "RegConnectRegistryW failed." };
+			throw RegException{ retCode, "TF(RegConnectRegistry) failed." };
 		}
 
 		// Take ownership of the result key
@@ -2477,7 +2479,7 @@ namespace WinUtils {
 		Close();
 
 		HKEY hKeyResult = nullptr;
-		RegResult retCode{ ::RegConnectRegistryW(machineName.c_str(), hKeyPredefined, &hKeyResult) };
+		RegResult retCode{ ::TF(RegConnectRegistry)(machineName.c_str(), hKeyPredefined, &hKeyResult) };
 		if (retCode.Failed())
 		{
 			return retCode;
@@ -2495,14 +2497,14 @@ namespace WinUtils {
 	{
 		switch (regType)
 		{
-		case REG_SZ:        return L"REG_SZ";
-		case REG_EXPAND_SZ: return L"REG_EXPAND_SZ";
-		case REG_MULTI_SZ:  return L"REG_MULTI_SZ";
-		case REG_DWORD:     return L"REG_DWORD";
-		case REG_QWORD:     return L"REG_QWORD";
-		case REG_BINARY:    return L"REG_BINARY";
+		case REG_SZ:        return TS("REG_SZ");
+		case REG_EXPAND_SZ: return TS("REG_EXPAND_SZ");
+		case REG_MULTI_SZ:  return TS("REG_MULTI_SZ");
+		case REG_DWORD:     return TS("REG_DWORD");
+		case REG_QWORD:     return TS("REG_QWORD");
+		case REG_BINARY:    return TS("REG_BINARY");
 
-		default:            return L"Unknown/unsupported registry type";
+		default:            return TS("Unknown/unsupported registry type");
 		}
 	}
 
@@ -2564,7 +2566,7 @@ namespace WinUtils {
 	string_t RegResult::ErrorMessage(const DWORD languageId) const
 	{
 		// Invoke FormatMessage() to retrieve the error message from Windows
-		details::ScopedLocalFree<wchar_t> messagePtr;
+		details::ScopedLocalFree<char_t> messagePtr;
 		DWORD retCode = ::FormatMessageW(
 			FORMAT_MESSAGE_ALLOCATE_BUFFER |
 			FORMAT_MESSAGE_FROM_SYSTEM |

@@ -20,6 +20,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+#include "WinPch.h"
 
 #include <algorithm>
 #include <format>
@@ -79,15 +80,15 @@ vector<DWORD> Injector::GetProcessPIDs(const string_t& processName)
 		return pids;
 	}
 
-	PROCESSENTRY32W pe32{};
-	pe32.dwSize = sizeof(PROCESSENTRY32W);
+	TF(PROCESSENTRY32) pe32 {};
+	pe32.dwSize = sizeof(TF(PROCESSENTRY32));
 
-	if (Process32FirstW(hSnapshot, &pe32)) {
+	if (TF(Process32First)(hSnapshot, &pe32)) {
 		do {
-			if (ToLower(ConvertString<string_t>((wstring)pe32.szExeFile)) == ToLower(processName)) {
+			if (ToLower(pe32.szExeFile) == ToLower(processName)) {
 				pids.push_back(pe32.th32ProcessID);
 			}
-		} while (Process32NextW(hSnapshot, &pe32));
+		} while (TF(Process32Next)(hSnapshot, &pe32));
 	}
 	else {
 		logger.DLog(LogLevel::Error, format(TS("Failed to enumerate processes, error code: {}"), GetLastError()));
@@ -459,23 +460,23 @@ vector<DWORD> Injector::InjectToAllProcesses(
 
 	const string_t targetProcess = ToLower(processName);
 	const DWORD currentPID = GetCurrentProcessId();
-	PROCESSENTRY32W pe32{};
-	pe32.dwSize = sizeof(PROCESSENTRY32W);
+	TF(PROCESSENTRY32) pe32 {};
+	pe32.dwSize = sizeof(TF(PROCESSENTRY32));
 
-	if (Process32FirstW(hSnapshot, &pe32)) {
+	if (TF(Process32First)(hSnapshot, &pe32)) {
 		do {
 			if (pe32.th32ProcessID == 0 || pe32.th32ProcessID == currentPID ||
 				find(excludeProcess.begin(), excludeProcess.end(), pe32.th32ProcessID) != excludeProcess.end()) {
 				continue;
 			}
-			if (ToLower(ConvertString<string_t>((wstring)pe32.szExeFile)) != targetProcess) continue;
-			logger.DLog(LogLevel::Info, ConvertString(format(L"Attempting to inject process: {} (PID:{})", pe32.szExeFile, pe32.th32ProcessID)));
+			if (ToLower(pe32.szExeFile) != targetProcess) continue;
+			logger.DLog(LogLevel::Info, ConvertString(format(TS("Attempting to inject process: {} (PID:{})"), pe32.szExeFile, pe32.th32ProcessID)));
 			if (InjectDLL(pe32.th32ProcessID, dllPath)) {
 				successPIDs.push_back(pe32.th32ProcessID);
-				logger.DLog(LogLevel::Info, ConvertString(format(L"Injection succeeded: {} (PID:{})", pe32.szExeFile, pe32.th32ProcessID)));
+				logger.DLog(LogLevel::Info, ConvertString(format(TS("Injection succeeded: {} (PID:{})"), pe32.szExeFile, pe32.th32ProcessID)));
 			}
-			else logger.DLog(LogLevel::Error, ConvertString(format(L"Injection failed: {} (PID:{})", pe32.szExeFile, pe32.th32ProcessID)));
-		} while (Process32NextW(hSnapshot, &pe32));
+			else logger.DLog(LogLevel::Error, ConvertString(format(TS("Injection failed: {} (PID:{})"), pe32.szExeFile, pe32.th32ProcessID)));
+		} while (TF(Process32Next)(hSnapshot, &pe32));
 	}
 	else {
 		logger.DLog(LogLevel::Error, format(TS("Failed to enumerate processes, error code: {}"), GetLastError()));
@@ -512,25 +513,25 @@ vector<DWORD> Injector::UninjectFromAllProcesses(
 
 	const string_t targetProcess = ToLower(processName);
 	const DWORD currentPID = GetCurrentProcessId();
-	PROCESSENTRY32W pe32{};
-	pe32.dwSize = sizeof(PROCESSENTRY32W);
+	TF(PROCESSENTRY32) pe32 {};
+	pe32.dwSize = sizeof(TF(PROCESSENTRY32));
 
-	if (Process32FirstW(hSnapshot, &pe32)) {
+	if (TF(Process32First)(hSnapshot, &pe32)) {
 		do {
 			if (pe32.th32ProcessID == 0 || pe32.th32ProcessID == currentPID ||
 				find(excludeProcess.begin(), excludeProcess.end(), pe32.th32ProcessID) != excludeProcess.end()) {
 				continue;
 			}
-			if (ToLower(ConvertString((wstring)pe32.szExeFile)) != targetProcess) continue;
-			logger.DLog(LogLevel::Info, ConvertString(format(L"Attempting to uninject DLL from process: {} (PID:{})", pe32.szExeFile, pe32.th32ProcessID)));
+			if (ToLower(pe32.szExeFile) != targetProcess) continue;
+			logger.DLog(LogLevel::Info, ConvertString(format(TS("Attempting to uninject DLL from process: {} (PID:{})"), pe32.szExeFile, pe32.th32ProcessID)));
 			if (UninjectDLL(pe32.th32ProcessID, dllPath)) {
 				successPIDs.push_back(pe32.th32ProcessID);
 			}
-			else  logger.DLog(LogLevel::Error, ConvertString(format(L"Uninjection failed: {} (PID:{})", pe32.szExeFile, pe32.th32ProcessID)));
-		} while (Process32NextW(hSnapshot, &pe32));
+			else  logger.DLog(LogLevel::Error, ConvertString(format(TS("Uninjection failed: {} (PID:{})"), pe32.szExeFile, pe32.th32ProcessID)));
+		} while (TF(Process32Next)(hSnapshot, &pe32));
 	}
 	else {
-		logger.DLog(LogLevel::Error, ConvertString( format(L"Failed to enumerate processes, error code: {}", GetLastError())));
+		logger.DLog(LogLevel::Error, ConvertString(format(TS("Failed to enumerate processes, error code: {}"), GetLastError())));
 	}
 
 	CloseHandle(hSnapshot);
