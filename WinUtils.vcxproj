@@ -18,6 +18,36 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\AWDef.cpp" />
+    <ClCompile Include="src\CmdParser.cpp" />
+    <ClCompile Include="src\Console.cpp" />
+    <ClCompile Include="src\ConsoleMenu.cpp" />
+    <ClCompile Include="src\HttpConnect.cpp" />
+    <ClCompile Include="src\INI.cpp" />
+    <ClCompile Include="src\Injector.cpp" />
+    <ClCompile Include="src\Logger.cpp" />
+    <ClCompile Include="src\StrConvert.cpp" />
+    <ClCompile Include="src\WinReg.cpp" />
+    <ClCompile Include="src\WinSvcMgr.cpp" />
+    <ClCompile Include="src\WinUtils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\WinUtils\AWDef.h" />
+    <ClInclude Include="include\WinUtils\CmdParser.h" />
+    <ClInclude Include="include\WinUtils\Console.h" />
+    <ClInclude Include="include\WinUtils\ConsoleMenu.h" />
+    <ClInclude Include="include\WinUtils\HttpConnect.h" />
+    <ClInclude Include="include\WinUtils\INI.h" />
+    <ClInclude Include="include\WinUtils\Injector.h" />
+    <ClInclude Include="include\WinUtils\Logger.h" />
+    <ClInclude Include="include\WinUtils\StrConvert.h" />
+    <ClInclude Include="include\WinUtils\WinPch.h" />
+    <ClInclude Include="include\WinUtils\WinReg.h" />
+    <ClInclude Include="include\WinUtils\WinSvcMgr.h" />
+    <ClInclude Include="include\WinUtils\WinUtils.h" />
+    <ClInclude Include="include\WinUtils\WinUtilsDef.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -74,11 +104,12 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);WU_EXPORTS;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>WinPch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -92,11 +123,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);WU_EXPORTS;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>WinPch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -108,11 +140,12 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions);WU_EXPORTS;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>WinPch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -126,11 +159,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions);WU_EXPORTS;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>WinPch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -138,56 +172,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="AWDef.h" />
-    <ClInclude Include="CmdParser.h" />
-    <ClInclude Include="Console.h" />
-    <ClInclude Include="ConsoleMenu.h" />
-    <ClInclude Include="hashlib\crc32.h" />
-    <ClInclude Include="hashlib\hash.h" />
-    <ClInclude Include="hashlib\hmac.h" />
-    <ClInclude Include="hashlib\keccak.h" />
-    <ClInclude Include="hashlib\md5.h" />
-    <ClInclude Include="hashlib\sha1.h" />
-    <ClInclude Include="hashlib\sha256.h" />
-    <ClInclude Include="hashlib\sha3.h" />
-    <ClInclude Include="HttpConnect.h" />
-    <ClInclude Include="ini.h" />
-    <ClInclude Include="Injector.h" />
-    <ClInclude Include="Logger.h" />
-    <ClInclude Include="StrConvert.h" />
-    <ClInclude Include="WinReg.h" />
-    <ClInclude Include="WinSvcMgr.h" />
-    <ClInclude Include="WinUtils.h" />
-    <ClInclude Include="WinUtilsDef.h" />
-    <ClInclude Include="WinPch.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="AWDef.cpp" />
-    <ClCompile Include="CmdParser.cpp" />
-    <ClCompile Include="Console.cpp" />
-    <ClCompile Include="ConsoleMenu.cpp" />
-    <ClCompile Include="hashlib\crc32.cpp" />
-    <ClCompile Include="hashlib\digest.cpp" />
-    <ClCompile Include="hashlib\keccak.cpp" />
-    <ClCompile Include="hashlib\md5.cpp" />
-    <ClCompile Include="hashlib\sha1.cpp" />
-    <ClCompile Include="hashlib\sha256.cpp" />
-    <ClCompile Include="hashlib\sha3.cpp" />
-    <ClCompile Include="HttpConnect.cpp" />
-    <ClCompile Include="ini.cpp" />
-    <ClCompile Include="Injector.cpp" />
-    <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="StrConvert.cpp">
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdcpp20</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdcpp20</LanguageStandard>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="WinReg.cpp" />
-    <ClCompile Include="WinSvcMgr.cpp" />
-    <ClCompile Include="WinUtils.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

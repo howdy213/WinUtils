@@ -13,138 +13,87 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="头文件\hashlib">
-      <UniqueIdentifier>{6c91c3bc-91ba-4552-bc11-0164ff109927}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\hashlib">
-      <UniqueIdentifier>{cce63737-f110-4f31-9591-e4554dfcc263}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CmdParser.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Console.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="HttpConnect.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Injector.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Logger.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="StrConvert.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="WinSvcMgr.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="WinUtils.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="WinUtilsDef.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ConsoleMenu.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="hashlib\crc32.h">
-      <Filter>头文件\hashlib</Filter>
-    </ClInclude>
-    <ClInclude Include="hashlib\hash.h">
-      <Filter>头文件\hashlib</Filter>
-    </ClInclude>
-    <ClInclude Include="hashlib\hmac.h">
-      <Filter>头文件\hashlib</Filter>
-    </ClInclude>
-    <ClInclude Include="hashlib\keccak.h">
-      <Filter>头文件\hashlib</Filter>
-    </ClInclude>
-    <ClInclude Include="hashlib\md5.h">
-      <Filter>头文件\hashlib</Filter>
-    </ClInclude>
-    <ClInclude Include="hashlib\sha1.h">
-      <Filter>头文件\hashlib</Filter>
-    </ClInclude>
-    <ClInclude Include="hashlib\sha3.h">
-      <Filter>头文件\hashlib</Filter>
-    </ClInclude>
-    <ClInclude Include="hashlib\sha256.h">
-      <Filter>头文件\hashlib</Filter>
-    </ClInclude>
-    <ClInclude Include="ini.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="WinReg.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="AWDef.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="WinPch.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
+    <ClCompile Include="src\AWDef.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CmdParser.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Console.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ConsoleMenu.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HttpConnect.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\INI.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Injector.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Logger.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrConvert.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WinReg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WinSvcMgr.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WinUtils.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="WinUtils.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="WinSvcMgr.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="StrConvert.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Logger.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="HttpConnect.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Injector.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Console.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="CmdParser.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="ConsoleMenu.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="hashlib\crc32.cpp">
-      <Filter>源文件\hashlib</Filter>
-    </ClCompile>
-    <ClCompile Include="hashlib\digest.cpp">
-      <Filter>源文件\hashlib</Filter>
-    </ClCompile>
-    <ClCompile Include="hashlib\keccak.cpp">
-      <Filter>源文件\hashlib</Filter>
-    </ClCompile>
-    <ClCompile Include="hashlib\md5.cpp">
-      <Filter>源文件\hashlib</Filter>
-    </ClCompile>
-    <ClCompile Include="hashlib\sha1.cpp">
-      <Filter>源文件\hashlib</Filter>
-    </ClCompile>
-    <ClCompile Include="hashlib\sha3.cpp">
-      <Filter>源文件\hashlib</Filter>
-    </ClCompile>
-    <ClCompile Include="hashlib\sha256.cpp">
-      <Filter>源文件\hashlib</Filter>
-    </ClCompile>
-    <ClCompile Include="ini.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="WinReg.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="AWDef.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
+    <ClInclude Include="include\WinUtils\AWDef.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\CmdParser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\Console.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\ConsoleMenu.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\HttpConnect.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\INI.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\Injector.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\Logger.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\StrConvert.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\WinPch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\WinReg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\WinSvcMgr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\WinUtils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\WinUtilsDef.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
