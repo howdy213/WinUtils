@@ -1,3 +1,4 @@
+English | [中文](README.md)
 # WinUtils
 
 ## Project Introduction
