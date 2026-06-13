@@ -295,16 +295,13 @@ namespace WinUtils {
 		return ret && elevation.TokenIsElevated != 0;
 	}
 
-	//Directly use wide string 
 	bool RequireAdminPrivilege(bool exit) {
 		if (IsCurrentProcessAdmin()) return true;
-		wchar_t path[MAX_PATH] = { 0 };
-		GetModuleFileNameW(nullptr, path, _countof(path));
-		wstring exePath = path;
+		string_t exePath = GetCurrentProcessPath();
 		int argc = 0;
-		wstring params = ExtractArguments(TF(GetCommandLine)());
+		string_t params = ExtractArguments(TF(GetCommandLine)());
 
-		HINSTANCE hResult = ShellExecuteW(nullptr, L"runas", exePath.c_str(),
+		HINSTANCE hResult = TF(ShellExecute)(nullptr, TS("runas"), exePath.c_str(),
 			params.c_str(), nullptr, SW_SHOWNORMAL);
 		if (reinterpret_cast<INT_PTR>(hResult) > 32) {
 			if (exit) ExitProcess(0);
@@ -334,21 +331,21 @@ namespace WinUtils {
 	// Command Line Handling
 	string_t ExtractArguments(const string_t& cmdLine)
 	{
-		if (cmdLine.empty()) return L"";
+		if (cmdLine.empty()) return TS("");
 		size_t pos = 0;
-		if (cmdLine[0] == L'\"')
+		if (cmdLine[0] == TS('\"'))
 		{
-			pos = cmdLine.find(L'\"', 1);
+			pos = cmdLine.find(TS('\"'), 1);
 			if (pos != wstring::npos) ++pos;
-			while (pos < cmdLine.size() && cmdLine[pos] == L' ') ++pos;
+			while (pos < cmdLine.size() && cmdLine[pos] == TS(' ')) ++pos;
 		}
 		else
 		{
-			pos = cmdLine.find(L' ');
-			if (pos == wstring::npos) return L"";
+			pos = cmdLine.find(TS(' '));
+			if (pos == wstring::npos) return TS("");
 			++pos;
 		}
-		return (pos < cmdLine.size()) ? cmdLine.substr(pos) : L"";
+		return (pos < cmdLine.size()) ? cmdLine.substr(pos) : TS("");
 	}
 
 	std::vector<string_t> ParseCommandLine(const char_t* lpCmdLine) {
