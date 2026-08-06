@@ -42,6 +42,7 @@
     <ClInclude Include="include\WinUtils\Injector.h" />
     <ClInclude Include="include\WinUtils\Logger.h" />
     <ClInclude Include="include\WinUtils\StrConvert.h" />
+    <ClInclude Include="include\WinUtils\WinIPC.h" />
     <ClInclude Include="include\WinUtils\WinPch.h" />
     <ClInclude Include="include\WinUtils\WinReg.h" />
     <ClInclude Include="include\WinUtils\WinSvcMgr.h" />

@@ -95,5 +95,8 @@
     <ClInclude Include="include\WinUtils\WinUtilsDef.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="include\WinUtils\WinIPC.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

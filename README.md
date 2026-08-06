@@ -18,7 +18,8 @@ C++23 现代 Windows 微功能组件库，所有功能均同时支持宽窄字�
 9. 完善的单文件日志库
 10. INI 文件解析（基于 mINI 库）
 11. 注册表读写（基于 WinReg 库）
-12. 更多实用功能...
+12. 跨进程通信（基于 libsharedmemory 库）
+13. 更多实用功能...
 
 ## 环境依赖
 
@@ -54,6 +55,7 @@ C++23 现代 Windows 微功能组件库，所有功能均同时支持宽窄字�
 
 - [mINI](https://github.com/metayeti/mINI)：C++ INI 解析器（[MIT 许可证](licenses/LICENSE-mINI)）
 - [WinReg](https://github.com/GiovanniDicanio/WinReg)：C++ 注册表读写库（[MIT 许可证](licenses/LICENSE-WinReg)）
+- [libsharedmemory](https://github.com/kyr0/libsharedmemory)：C++ 跨进程通信库（[MIT 许可证](licenses/LICENSE-libsharedmemory)）
 
 ## 许可证
 
