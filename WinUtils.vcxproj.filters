@@ -51,6 +51,9 @@
     <ClCompile Include="src\WinUtils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\UIAccess.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\WinUtils\AWDef.h">
@@ -96,6 +99,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\WinUtils\WinIPC.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WinUtils\UIAccess.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

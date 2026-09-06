@@ -20,7 +20,8 @@ A modern C++23 micro-utility component library for Windows. All features support
 10. INI file parsing (based on the mINI library)
 11. Registry read/write (based on the WinReg library)
 12. Inter-process communication (based on the libsharedmemory library)
-13. And more useful utilities...
+13. UIAccess Privilege Acquisition
+14. And more useful utilities...
 
 ## Environment Requirements
 

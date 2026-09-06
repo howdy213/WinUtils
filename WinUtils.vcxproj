@@ -28,6 +28,7 @@
     <ClCompile Include="src\Injector.cpp" />
     <ClCompile Include="src\Logger.cpp" />
     <ClCompile Include="src\StrConvert.cpp" />
+    <ClCompile Include="src\UIAccess.cpp" />
     <ClCompile Include="src\WinReg.cpp" />
     <ClCompile Include="src\WinSvcMgr.cpp" />
     <ClCompile Include="src\WinUtils.cpp" />
@@ -42,6 +43,7 @@
     <ClInclude Include="include\WinUtils\Injector.h" />
     <ClInclude Include="include\WinUtils\Logger.h" />
     <ClInclude Include="include\WinUtils\StrConvert.h" />
+    <ClInclude Include="include\WinUtils\UIAccess.h" />
     <ClInclude Include="include\WinUtils\WinIPC.h" />
     <ClInclude Include="include\WinUtils\WinPch.h" />
     <ClInclude Include="include\WinUtils\WinReg.h" />
