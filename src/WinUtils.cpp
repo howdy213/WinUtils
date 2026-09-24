@@ -396,7 +396,7 @@ namespace WinUtils {
 		return false;
 	}
 
-	void EnsureSingleInstance(bool exclusive, string_t title, string_t name, string_t content, string_t extraInfo) {
+	HANDLE EnsureSingleInstance(bool exclusive, string_t title, string_t name, string_t content, string_t extraInfo) {
 		if (name.empty()) name = GetCurrentProcessName();
 		if (title.empty()) title = TS("Prompt - ") + name;
 		if (content.empty()) content = TS("The program is already running!\nClick OK to close the existing instance, click Cancel to exit this run.");
@@ -412,6 +412,7 @@ namespace WinUtils {
 			if (ret == IDOK) TerminateProcessesByName(name);
 			ExitProcess(0);
 		}
+		return hMutex;
 	}
 
 	// Command Line Handling
